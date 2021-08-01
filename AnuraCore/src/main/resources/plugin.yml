@@ -1,0 +1,23 @@
+name: AnuraCore
+main: de.mc_anura.core.AnuraCore
+version: 0.10
+author: kaenganxt
+api-version: 1.17
+commands:
+    r:
+        description: Antworte einem Spieler
+        usage: /<command> <nachricht>
+    spawn:
+        description: Teleportiert dich zum Spawn
+        usage: /<command> <player>
+    money:
+        description: Geld
+        usage: /<command> [pay <player> <money>]
+        aliases: [geld]
+    gm:
+        description: GameMode!
+        usage: /<command> <gm>
+    msg:
+        description: Sende eine Nachricht
+        usage: /<command> <spieler> <msg>
+        aliases: [message, tell]
