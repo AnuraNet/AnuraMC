@@ -1,0 +1,14 @@
+name: RealisticMinecraft
+version: 0.1
+author: hibo98
+# Custom Properties
+main: de.mc_anura.realisticminecraft.RealisticMinecraft
+depend: [AnuraCore,AnuraFreebuild]
+api-version: 1.17
+commands:
+  infobar:
+    description: Konfigurieret die Infobars
+    usage: §c/infobar <durst|temp(eratur)> <an|standard>
+  infobarset:
+    description: Setzt Werte für die Infobar
+    usage: §c/infobarset <durst|temp(eratur)> <value>
