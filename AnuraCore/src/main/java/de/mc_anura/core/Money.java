@@ -22,7 +22,7 @@ public class Money {
 
     private static final Map<UUID, Integer> playerMoney = new ConcurrentHashMap<>();
     
-    private static final Set<UUID> toSave = Collections.newSetFromMap(new ConcurrentHashMap<UUID, Boolean>());
+    private static final Set<UUID> toSave = Collections.newSetFromMap(new ConcurrentHashMap<>());
     
     public static void init() {
         AnuraThread.add(Bukkit.getScheduler().runTaskTimerAsynchronously(AnuraCore.getInstance(), Money::save, 20 * 60, 20 * 60));
@@ -71,7 +71,7 @@ public class Money {
     public static boolean loadMoney(UUID uuid) {
         try {
             ResultSet rs = DB.querySelect("SELECT money FROM players WHERE uuid = ?", uuid.toString());
-            rs.first();
+            rs.next();
             playerMoney.put(uuid, rs.getInt("money"));
             return true;
         } catch (SQLException ex) {

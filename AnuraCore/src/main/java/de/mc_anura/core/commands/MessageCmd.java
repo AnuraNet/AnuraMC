@@ -63,21 +63,14 @@ public class MessageCmd implements CommandExecutor, TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String whatever, String[] args) {
-        List<String> matches = new ArrayList<>();
-        if (args.length != 1) {
-            return matches;
+        List<String> possible = new ArrayList<>();
+        if (args.length == 1) {
+            possible.addAll(Bukkit.getOnlinePlayers().stream().map(HumanEntity::getName).toList());
+            possible.add("read");
+            possible.add("list");
+            possible.add("delete");
         }
-        String search = args[0].toLowerCase();
-        if ("read".startsWith(search)) {
-            matches.add("read");
-        }
-        if ("list".startsWith(search)) {
-            matches.add("list");
-        }
-        if ("delete".startsWith(search)) {
-            matches.add("delete");
-        }
-        Bukkit.getOnlinePlayers().stream().map(HumanEntity::getName).filter((name) -> name.toLowerCase().startsWith(search)).forEach(matches::add);
-        return matches;
+        String search = args[args.length - 1].toLowerCase();
+        return possible.stream().filter((name) -> name.toLowerCase().startsWith(search)).toList();
     }
 }

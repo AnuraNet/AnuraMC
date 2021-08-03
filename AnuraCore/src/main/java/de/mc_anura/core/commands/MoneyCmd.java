@@ -9,13 +9,18 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class MoneyCmd implements CommandExecutor {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class MoneyCmd implements CommandExecutor, TabExecutor {
 
     @Override
-    //@SuppressWarnings("null")
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String alias, String[] args) {
         Player P = (sender instanceof Player) ? (Player) sender : null;
 
@@ -28,7 +33,7 @@ public class MoneyCmd implements CommandExecutor {
                 Msg.send(P, AnuraCore.getInstance(), MsgType.SUCCESS, "Du hast %m", money);
             });
             return true;
-        } else if ((args[0].equalsIgnoreCase("pay") || args[0].equalsIgnoreCase("send")) && (args.length == 3)) {
+        } else if (args[0].equalsIgnoreCase("pay") && args.length == 3) {
             Integer money;
             try {
                 money = Integer.parseInt(args[2]);
@@ -87,5 +92,17 @@ public class MoneyCmd implements CommandExecutor {
             }
         }
         return true;
+    }
+
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String whatever, String[] args) {
+        List<String> possible = new ArrayList<>();
+        if (args.length == 1) {
+            possible.add("pay");
+        } else if (args.length == 2) {
+            possible.addAll(Bukkit.getOnlinePlayers().stream().map(HumanEntity::getName).toList());
+        }
+        String search = args[args.length - 1].toLowerCase();
+        return possible.stream().filter((name) -> name.toLowerCase().startsWith(search)).toList();
     }
 }

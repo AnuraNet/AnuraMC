@@ -23,8 +23,6 @@ public abstract class Villagers {
     public static void init() {
         AnuraThread.add(Bukkit.getScheduler().runTaskLater(AnuraCore.getInstance(), () -> { // The scoreboard seems to be initialized later
             ScoreboardManager boardMan = Bukkit.getScoreboardManager();
-            if (boardMan == null)
-                return;
 
             t = boardMan.getMainScoreboard().getTeam("noMoveEntity");
             if (t == null) {

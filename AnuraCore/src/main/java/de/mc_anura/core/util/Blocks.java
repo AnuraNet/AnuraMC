@@ -39,10 +39,10 @@ public abstract class Blocks {
 
     public static float faceToYaw(BlockFace face) {
         return switch (face) {
-            case NORTH -> 180;
-            case EAST -> 270;
-            case WEST -> 90;
-            default -> 0;
+            case NORTH -> 0;
+            case EAST -> 90;
+            case WEST -> 270;
+            default -> 180;
         };
     }
 

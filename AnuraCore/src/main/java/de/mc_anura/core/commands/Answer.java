@@ -10,14 +10,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
-import java.util.UUID;
-import java.util.WeakHashMap;
+import java.util.*;
 
-public class Answer implements CommandExecutor {
+public class Answer implements CommandExecutor, TabExecutor {
     
     public static Map<Player, UUID> chatPartners = new WeakHashMap<>();
     
@@ -51,5 +51,10 @@ public class Answer implements CommandExecutor {
     private static void send(Player P, boolean sent, String name, String msg) {
         P.sendMessage(P.getDisplayName() + ChatColor.GRAY + " -> " + name + ChatColor.GRAY + ": " + ChatColor.RESET + msg);
         if (!sent) Msg.send(P, AnuraCore.getInstance(), MsgType.INFO, "(Noch nicht zugestellt, Spieler ist nicht mehr online, Nachricht wird in seine Mailbox verschoben)");
+    }
+
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String whatever, String[] args) {
+        return new ArrayList<>();
     }
 }

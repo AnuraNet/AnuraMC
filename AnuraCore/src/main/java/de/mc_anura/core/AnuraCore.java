@@ -9,9 +9,11 @@ import de.mc_anura.core.msg.Msg.MsgType;
 import de.mc_anura.core.msg.Msg.PluginType;
 import de.mc_anura.core.tools.Potions;
 import de.mc_anura.core.tools.Villagers;
+import de.mc_anura.core.tools.Warps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
 import org.bukkit.Bukkit;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -37,6 +39,7 @@ public class AnuraCore extends JavaPlugin {
         Villagers.init();
         Potions.init();
         Money.init();
+        Warps.load();
         
         for (Player P : Bukkit.getOnlinePlayers()) {
             JoinEvent.addAttachment(P);
@@ -74,16 +77,38 @@ public class AnuraCore extends JavaPlugin {
         man.registerEvents(new PlayerChat(), this);
         man.registerEvents(new PotionEvents(), this);
     }
-    
+
     @SuppressWarnings({"ConstantConditions"})
     private void registerCommands() {
-        getCommand("r").setExecutor(new Answer());
-        getCommand("gm").setExecutor(new GameMode());
-        getCommand("money").setExecutor(new MoneyCmd());
-        getCommand("spawn").setExecutor(new Spawn());
+        Answer rCmd = new Answer();
+        PluginCommand r = getCommand("r");
+        r.setExecutor(rCmd);
+        r.setTabCompleter(rCmd);
+
+        GameMode gmCmd = new GameMode();
+        PluginCommand gm = getCommand("gm");
+        gm.setExecutor(gmCmd);
+        gm.setTabCompleter(gmCmd);
+        gm.setPermission("core.commands.gm");
+
+        MoneyCmd moneyCmd = new MoneyCmd();
+        PluginCommand money = getCommand("money");
+        money.setExecutor(moneyCmd);
+        money.setTabCompleter(moneyCmd);
+
+        Spawn spawnCmd = new Spawn();
+        PluginCommand spawn = getCommand("spawn");
+        spawn.setExecutor(spawnCmd);
+        spawn.setTabCompleter(spawnCmd);
         
         MessageCmd msgCmd = new MessageCmd();
-        getCommand("msg").setExecutor(msgCmd);
-        getCommand("msg").setTabCompleter(msgCmd);
+        PluginCommand msg = getCommand("msg");
+        msg.setExecutor(msgCmd);
+        msg.setTabCompleter(msgCmd);
+
+        WarpCommand warpCmd = new WarpCommand();
+        PluginCommand warp = getCommand("warp");
+        warp.setExecutor(warpCmd);
+        warp.setTabCompleter(warpCmd);
     }
 }
