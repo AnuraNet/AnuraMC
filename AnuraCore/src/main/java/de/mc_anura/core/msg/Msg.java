@@ -125,7 +125,7 @@ public abstract class Msg {
             return shortC;
         } else {
             if (data.getType() != PluginType.GAMEPLAY) {
-                return Component.text("[", NamedTextColor.GRAY).append(shortC).append(Component.text("]").color(NamedTextColor.GRAY));
+                return Component.text("[", NamedTextColor.GRAY).append(shortC).append(Component.text("] ").color(NamedTextColor.GRAY));
             } else {
                 return shortC.append(Component.text("> ").color(NamedTextColor.GRAY));
             }

@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -87,7 +88,7 @@ public abstract class Messenger {
         String name = null;
         Player tempPlayer = Bukkit.getPlayer(from);
         if (tempPlayer != null) {
-            name = tempPlayer.getDisplayName();
+            name = tempPlayer.displayName().toString();
         }
         DB.queryUpdate(true, "INSERT INTO playermailbox (toId, sender, fromId, msg, isRead, time) VALUES ((SELECT id FROM players WHERE uuid = ?), ?, (SELECT id FROM players WHERE uuid = ?), ?, ?, ?)",
           owner.toString(), name, from.toString(), msg, read, (int) (System.currentTimeMillis() / 1000));
@@ -114,7 +115,7 @@ public abstract class Messenger {
     public static void readMsgs(Player P, boolean onlyUnread, int page) {
         if (page < 1) return;
         AnuraThread.async(() -> {
-            String read = (onlyUnread ? "isRread = 0 AND " : "");
+            String read = (onlyUnread ? "isRead = 0 AND " : "");
             ResultSet num = DB.querySelect("SELECT count(*) as num FROM playermailbox WHERE " + read + "toId = (SELECT id FROM players WHERE uuid = ?)", P.getUniqueId().toString());
             try {
                 if (!num.next() || num.getInt("num") == 0) {
@@ -158,7 +159,7 @@ public abstract class Messenger {
                     String msg = rs.getString("msg");
                     UUID fromUU = rs.getString("fromP") == null ? null : UUID.fromString(rs.getString("fromP"));
                     if (!queue.containsKey(P)) queue.put(P, new ConcurrentLinkedQueue<>());
-                    queue.get(P).add(new MessengerMsg(fromUU, rs.getString("from"), time, msg, P));
+                    queue.get(P).add(new MessengerMsg(fromUU, rs.getString("sender"), time, msg, P));
                 }
                 while (!queue.get(P).isEmpty()) {
                     queue.get(P).poll().send();
@@ -184,21 +185,21 @@ public abstract class Messenger {
         private final String time, msg;
         private final Player to;
 
-        @SuppressWarnings("null")
         MessengerMsg(UUID fromUU, String from, String time, String msg, Player to) {
             this.time = time;
             this.msg = msg;
             this.to = to;
             if (fromUU == null) {
                 resolved = from;
-            } else if (Bukkit.getPlayer(fromUU) != null) {
-                resolved = Bukkit.getPlayer(fromUU).getDisplayName();
-            } else if (from != null) {
-                resolved = from;
             } else {
-                UUIDManager.getName(fromUU, (name) -> {
-                    resolved = name;
-                });
+                Player fromP = Bukkit.getPlayer(fromUU);
+                if (fromP != null) {
+                    resolved = fromP.displayName().toString();
+                } else if (from != null) {
+                    resolved = from;
+                } else {
+                    UUIDManager.getName(fromUU, (name) -> resolved = name);
+                }
             }
         }
 

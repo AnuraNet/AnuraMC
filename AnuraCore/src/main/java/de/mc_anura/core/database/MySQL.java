@@ -159,7 +159,7 @@ public class MySQL {
             }
         }
         try {
-            PreparedStatement st = conn.prepareStatement(query);
+            PreparedStatement st = conn.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             int i = 1;
             for (Object o : args) {
                 st.setObject(i, o);

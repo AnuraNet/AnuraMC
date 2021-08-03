@@ -16,8 +16,11 @@ commands:
         aliases: [geld]
     gm:
         description: GameMode!
-        usage: /<command> <gm>
+        usage: /<command> <gm> [player]
     msg:
         description: Sende eine Nachricht
         usage: /<command> <spieler> <msg>
         aliases: [message, tell]
+    warp:
+        description: Teleportiert zu einem Warp
+        usage: /<command> <warp>

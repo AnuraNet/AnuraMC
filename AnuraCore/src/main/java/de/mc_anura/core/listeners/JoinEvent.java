@@ -5,6 +5,7 @@ import de.mc_anura.core.AnuraThread;
 import de.mc_anura.core.Money;
 import de.mc_anura.core.database.DB;
 import de.mc_anura.core.events.AnuraLeaveEvent;
+import de.mc_anura.core.msg.Messenger;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -43,6 +44,7 @@ public class JoinEvent implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         //event.setJoinMessage(null);
         addAttachment(event.getPlayer());
+        Messenger.checkMsgs(event.getPlayer());
     }
 
     @EventHandler
