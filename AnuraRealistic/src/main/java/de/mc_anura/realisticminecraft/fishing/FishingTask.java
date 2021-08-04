@@ -1,4 +1,3 @@
-
 package de.mc_anura.realisticminecraft.fishing;
 
 public record FishingTask(long timestamp, Runnable r) {

@@ -2,10 +2,11 @@ package de.mc_anura.realisticminecraft.infobar;
 
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
+import org.jetbrains.annotations.NotNull;
 
-public class TemperatureBar extends Infobar<TemperaturePlayer> {
+public class TemperatureBar extends InfoBar<TemperaturePlayer> {
 
-    public TemperatureBar(TemperaturePlayer p, BarStatus status) {
+    public TemperatureBar(@NotNull TemperaturePlayer p, @NotNull BarStatus status) {
         super(p, "Temperatur", BarColor.GREEN, BarStyle.SOLID, status);
     }
 

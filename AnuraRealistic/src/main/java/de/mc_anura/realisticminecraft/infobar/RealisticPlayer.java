@@ -3,8 +3,8 @@ package de.mc_anura.realisticminecraft.infobar;
 import de.mc_anura.core.database.DB;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-
-import java.util.Objects;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class RealisticPlayer {
 
@@ -13,10 +13,9 @@ public abstract class RealisticPlayer {
     protected final short DEFAULT;
     protected float value;
     protected final Player player;
-    protected Infobar<? extends RealisticPlayer> bar;
+    protected InfoBar<? extends RealisticPlayer> bar;
 
-    protected RealisticPlayer(Player p, float value, short MIN, short MAX, short DEFAULT) {
-        Objects.requireNonNull(p);
+    protected RealisticPlayer(@NotNull Player p, float value, short MIN, short MAX, short DEFAULT) {
         player = p;
         this.MIN = MIN;
         this.MAX = MAX;
@@ -55,14 +54,14 @@ public abstract class RealisticPlayer {
         return setValue(value + modifier);
     }
 
-    public Player getPlayer() {
+    public @NotNull Player getPlayer() {
         return player;
     }
 
     public short getMIN() {
         return MIN;
     }
-    
+
     public boolean isMIN() {
         return value == MIN;
     }
@@ -78,15 +77,15 @@ public abstract class RealisticPlayer {
     public short getDEFAULT() {
         return DEFAULT;
     }
-    
+
     public boolean isExtremeValue() {
         return isMIN() || isMAX();
     }
-    
-    public Infobar<? extends RealisticPlayer> getBar() {
+
+    public @Nullable InfoBar<? extends RealisticPlayer> getBar() {
         return bar;
     }
-    
+
     protected void changeValue(float newValue) {
     }
 

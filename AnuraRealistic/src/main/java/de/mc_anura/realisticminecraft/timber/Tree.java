@@ -1,13 +1,16 @@
 package de.mc_anura.realisticminecraft.timber;
 
 import de.mc_anura.freebuild.regions.RegionManager;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.HashSet;
+import java.util.Random;
+import java.util.UUID;
 
 public class Tree {
 
@@ -20,7 +23,7 @@ public class Tree {
     private final Material leave;
     private final HashSet<UUID> owners = new HashSet<>();
 
-    public Tree(Block first, HashSet<Block> logs, HashSet<Block> leaves, BlockFace fallDirection, Material wood, Material leave) {
+    public Tree(@NotNull Block first, @NotNull HashSet<Block> logs, @NotNull HashSet<Block> leaves, @Nullable BlockFace fallDirection, @NotNull Material wood, @NotNull Material leave) {
         this.logList = logs;
         this.leaveList = leaves;
         this.lowestLog = first;
@@ -54,11 +57,11 @@ public class Tree {
         });
     }
 
-    public HashSet<Block> getLogs() {
+    public @NotNull HashSet<Block> getLogs() {
         return logList;
     }
 
-    public HashSet<Block> getLeaves() {
+    public @NotNull HashSet<Block> getLeaves() {
         return leaveList;
     }
 
@@ -66,15 +69,15 @@ public class Tree {
         return highestBlock.getLocation().getBlockY() - lowestLog.getLocation().getBlockY();
     }
 
-    public Block getLowestLog() {
+    public @NotNull Block getLowestLog() {
         return lowestLog;
     }
 
-    public Location getLowestLogLoc() {
+    public @NotNull Location getLowestLogLoc() {
         return lowestLog.getLocation();
     }
 
-    public BlockFace getFallDirection() {
+    public @NotNull BlockFace getFallDirection() {
         return direction;
     }
 
@@ -82,19 +85,19 @@ public class Tree {
         return leaveList.size() > 5;
     }
 
-    public Material getWood() {
+    public @NotNull Material getWood() {
         return wood;
     }
 
-    public Material getLeave() {
+    public @NotNull Material getLeave() {
         return leave;
     }
 
-    public HashSet<UUID> getOwners() {
+    public @NotNull HashSet<UUID> getOwners() {
         return owners;
     }
 
-    private static UUID getBlockOwner(Block b) {
+    private static @Nullable UUID getBlockOwner(@NotNull Block b) {
         return RegionManager.getOwner(b.getLocation());
     }
 }

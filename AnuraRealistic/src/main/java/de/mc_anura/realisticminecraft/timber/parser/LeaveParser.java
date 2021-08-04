@@ -1,8 +1,9 @@
-
 package de.mc_anura.realisticminecraft.timber.parser;
 
-import java.util.HashSet;
 import org.bukkit.block.Block;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.HashSet;
 
 public class LeaveParser {
 
@@ -10,20 +11,20 @@ public class LeaveParser {
     private final TreeParser tp;
     private final HashSet<Block> leaveList = new HashSet<>();
 
-    protected LeaveParser(TreeParser tp, Block firstBlock) {
+    protected LeaveParser(@NotNull TreeParser tp, @NotNull Block firstBlock) {
         this.tp = tp;
         this.firstBlock = firstBlock;
     }
-    
+
     protected HashSet<Block> parse() {
         tp.getDirsLeaves().stream()
                 .map((v) -> firstBlock.getRelative(v.getBlockX(), v.getBlockY(), v.getBlockZ()))
                 .forEach(this::parseLeaves);
         return leaveList;
     }
-    
-    private void parseLeaves(Block b) {
-        if (leaveList.contains(b) || 
+
+    private void parseLeaves(@NotNull Block b) {
+        if (leaveList.contains(b) ||
                 TreeParser.isDistanceBiggerThan(firstBlock.getLocation(), b.getLocation(), tp.getMaxLeavesDistance())) {
             return;
         }
@@ -36,8 +37,8 @@ public class LeaveParser {
                 .filter((r) -> (r.getLocation().getBlockY() >= firstBlock.getLocation().getBlockY()))
                 .forEach(this::parseLeaves);
     }
-    
-    private boolean isLeaves(Block b) {
+
+    private boolean isLeaves(@NotNull Block b) {
         return b.getType().equals(tp.leave);
     }
 }

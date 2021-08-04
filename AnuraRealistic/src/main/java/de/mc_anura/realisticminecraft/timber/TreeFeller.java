@@ -1,18 +1,11 @@
 package de.mc_anura.realisticminecraft.timber;
 
 import de.mc_anura.core.AnuraThread;
-import java.util.Random;
 import de.mc_anura.realisticminecraft.RealisticMinecraft;
 import de.mc_anura.realisticminecraft.timber.event.AppleDropEvent;
 import de.mc_anura.realisticminecraft.timber.event.TreeCutEvent;
-//import de.mc_anura.realisticminecraft.util.LogBlockProvider;
-import de.mc_anura.realisticminecraft.util.TimberUtil;
-import org.bukkit.Axis;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import de.mc_anura.realisticminecraft.util.LogBlockProvider;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
@@ -21,6 +14,9 @@ import org.bukkit.block.data.type.Leaves;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Random;
 
 public class TreeFeller {
 
@@ -28,12 +24,12 @@ public class TreeFeller {
     private final Player p;
     private TreeCutEvent treeCutEvent;
 
-    public TreeFeller(Player p, Tree t) {
+    public TreeFeller(@NotNull Player p, @NotNull Tree t) {
         this.p = p;
         this.t = t;
     }
 
-    public void cut(ItemStack axe) {
+    public void cut(@NotNull ItemStack axe) {
         treeCutEvent = new TreeCutEvent(p, t.getLowestLog());
         Bukkit.getPluginManager().callEvent(treeCutEvent);
         if (treeCutEvent.isCancelled()) {
@@ -106,19 +102,19 @@ public class TreeFeller {
         }
     }
 
-    private BlockData getLogOrientation() {
+    private @NotNull BlockData getLogOrientation() {
         Orientable o = (Orientable) t.getWood().createBlockData();
         o.setAxis(convertDirection(t.getFallDirection()));
         return o;
     }
 
-    private BlockData getLeavesData() {
+    private @NotNull BlockData getLeavesData() {
         Leaves l = (Leaves) t.getLeave().createBlockData();
         l.setPersistent(true);//@TODO: Check if needed
         return l;
     }
 
-    private Material getSaplingMaterial() {
+    private @NotNull Material getSaplingMaterial() {
         return switch (t.getWood()) {
             case BIRCH_LOG -> Material.BIRCH_SAPLING;
             case SPRUCE_LOG -> Material.SPRUCE_SAPLING;
@@ -129,7 +125,7 @@ public class TreeFeller {
         };
     }
 
-    private Location getPossibleLocation(Block start, int stage) {
+    private @NotNull Location getPossibleLocation(@NotNull Block start, int stage) {
         if (stage != 0) {
             for (int i = 1; i <= stage; i++) {
                 Block b = start.getRelative(t.getFallDirection(), i);
@@ -142,22 +138,22 @@ public class TreeFeller {
         return start.getLocation();
     }
 
-    private static Axis convertDirection(BlockFace bf) {
+    private static @NotNull Axis convertDirection(@NotNull BlockFace bf) {
         return switch (bf) {
             case NORTH, SOUTH -> Axis.Z;
             default -> Axis.X;
         };
     }
 
-    public static void queueBlockBreak(Player p, Block b) {
+    public static void queueBlockBreak(@NotNull Player p, @NotNull Block b) {
         if (RealisticMinecraft.hasLogBlock()) {
-//            LogBlockProvider.queueBlockBreak(p, b);
+            LogBlockProvider.queueBlockBreak(p, b);
         }
     }
 
-    public static void queueFallingBlock(Player p, Location l, BlockData bd) {
+    public static void queueFallingBlock(@NotNull Player p, @NotNull Location l, @NotNull BlockData bd) {
         if (RealisticMinecraft.hasLogBlock()) {
-//            LogBlockProvider.queueFalling(p, l, bd);
+            LogBlockProvider.queueFalling(p, l, bd);
         }
     }
 }

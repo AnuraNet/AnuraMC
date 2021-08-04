@@ -1,15 +1,19 @@
 package de.mc_anura.realisticminecraft.timber.parser;
 
 import com.google.common.collect.Sets;
-import java.util.Collection;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
 
 public class OakTreeParser extends TreeParser {
 
-    protected OakTreeParser(Block first) {
+    protected OakTreeParser(@NotNull Block first) {
         super(first);
+        wood_tag = Tag.OAK_LOGS;
         wood = Material.OAK_LOG;
         leave = Material.OAK_LEAVES;
     }
@@ -30,7 +34,7 @@ public class OakTreeParser extends TreeParser {
     }
 
     @Override
-    protected Collection<Vector> getDirsLog() {
+    protected @NotNull Collection<Vector> getDirsLog() {
         return Sets.newHashSet(new Vector(0, 0, -1), new Vector(1, 0, 0), new Vector(0, 0, 1), new Vector(-1, 0, 0),
                 new Vector(1, 1, 1), new Vector(-1, 1, -1), new Vector(-1, 1, 1), new Vector(1, 1, -1),
                 new Vector(1, 0, 1), new Vector(-1, 0, -1), new Vector(-1, 0, 1), new Vector(1, 0, -1),
