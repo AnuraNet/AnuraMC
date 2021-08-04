@@ -4,16 +4,17 @@ import de.mc_anura.core.AnuraThread;
 import de.mc_anura.core.database.DB;
 import de.mc_anura.core.msg.Msg;
 import de.mc_anura.core.msg.Msg.PluginData;
-import de.mc_anura.realisticminecraft.command.InfobarCmd;
-import de.mc_anura.realisticminecraft.command.InfobarSetCmd;
+import de.mc_anura.realisticminecraft.command.ChairCommand;
+import de.mc_anura.realisticminecraft.command.InfoBarCommand;
+import de.mc_anura.realisticminecraft.command.SetInfoBarCommand;
 import de.mc_anura.realisticminecraft.fishing.FishingChunk;
-import de.mc_anura.realisticminecraft.infobar.InfobarUtil;
-import de.mc_anura.realisticminecraft.listener.Chairs;
-import de.mc_anura.realisticminecraft.util.ChairManager;
+import de.mc_anura.realisticminecraft.infobar.InfoBarUtil;
 import de.mc_anura.realisticminecraft.infobar.ValueHolder;
+import de.mc_anura.realisticminecraft.listener.Chairs;
 import de.mc_anura.realisticminecraft.listener.Fishing;
-import de.mc_anura.realisticminecraft.listener.Infobar;
+import de.mc_anura.realisticminecraft.listener.InfoBar;
 import de.mc_anura.realisticminecraft.listener.Timber;
+import de.mc_anura.realisticminecraft.util.ChairManager;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.PluginCommand;
@@ -54,22 +55,27 @@ public class RealisticMinecraft extends JavaPlugin {
                 + ") ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_german1_ci COMMENT='RealisticMinecraft | LukBukkit'");
         // Chairs
         Bukkit.getPluginManager().registerEvents(new Chairs(), instance);
-        // Infobar
+        // InfoBar
         AnuraThread.async(() -> Bukkit.getOnlinePlayers().stream().filter((p) -> p.getGameMode().equals(GameMode.SURVIVAL)).forEach(ValueHolder::new));
-        InfobarCmd infobarCmd = new InfobarCmd();
-        PluginCommand infobar = instance.getCommand("infobar");
-        if (infobar != null) {
-            infobar.setExecutor(infobarCmd);
-            infobar.setTabCompleter(infobarCmd);
+        InfoBarCommand infoBarCommand = new InfoBarCommand();
+        PluginCommand infoBar = instance.getCommand("infobar");
+        if (infoBar != null) {
+            infoBar.setExecutor(infoBarCommand);
+            infoBar.setTabCompleter(infoBarCommand);
         }
-        InfobarSetCmd infobarSetCmd = new InfobarSetCmd();
-        PluginCommand infobarset = instance.getCommand("infobarset");
-        if (infobarset != null) {
-            infobarset.setExecutor(infobarSetCmd);
-            infobarset.setTabCompleter(infobarSetCmd);
+        SetInfoBarCommand setInfoBarCommand = new SetInfoBarCommand();
+        PluginCommand setInfoBar = instance.getCommand("setinfobar");
+        if (setInfoBar != null) {
+            setInfoBar.setExecutor(setInfoBarCommand);
+            setInfoBar.setTabCompleter(setInfoBarCommand);
         }
-        InfobarUtil.enableInfobarTasks();
-        Bukkit.getPluginManager().registerEvents(new Infobar(), instance);
+        ChairCommand chairCommand = new ChairCommand();
+        PluginCommand chair = instance.getCommand("chair");
+        if (chair != null) {
+            chair.setExecutor(chairCommand);
+        }
+        InfoBarUtil.enableInfoBarTasks();
+        Bukkit.getPluginManager().registerEvents(new InfoBar(), instance);
         // Fishing
         FishingChunk.init();
         Bukkit.getPluginManager().registerEvents(new Fishing(), instance);
@@ -86,7 +92,7 @@ public class RealisticMinecraft extends JavaPlugin {
     public static RealisticMinecraft getInstance() {
         return instance;
     }
-    
+
     public static boolean hasLogBlock() {
         return Bukkit.getServer().getPluginManager().getPlugin("LogBlock") != null;
     }

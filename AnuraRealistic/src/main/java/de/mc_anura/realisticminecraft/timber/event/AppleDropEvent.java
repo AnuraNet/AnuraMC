@@ -10,7 +10,7 @@ public class AppleDropEvent extends AnuraPlayerEvent {
     private static final HandlerList HANDLERS = new HandlerList();
     private final short amount;
 
-    public AppleDropEvent(Player p, short amount) {
+    public AppleDropEvent(@NotNull Player p, short amount) {
         super(p, true);
         this.amount = amount;
     }

@@ -4,9 +4,12 @@ import de.mc_anura.realisticminecraft.listener.Timber;
 import de.mc_anura.realisticminecraft.timber.Tree;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,14 +21,15 @@ public abstract class TreeParser {
     private final HashSet<Block> logList = new HashSet<>();
     private final HashSet<Block> leaveList = new HashSet<>();
     private final Block firstBlock;
+    protected Tag<Material> wood_tag;
     protected Material wood;
     protected Material leave;
 
-    protected TreeParser(Block first) {
+    protected TreeParser(@NotNull Block first) {
         firstBlock = first;
     }
 
-    public Tree parse(BlockFace bf) {
+    public @NotNull Tree parse(@Nullable BlockFace bf) {
         parseTrunk(firstBlock);
         if (getMaxTrunkSize() > 0) {
             getDirsStem().stream().map((v) -> firstBlock.getRelative(v.getBlockX(), v.getBlockY(), v.getBlockZ()))
@@ -36,7 +40,7 @@ public abstract class TreeParser {
         return new Tree(firstBlock, logList, leaveList, bf, wood, leave);
     }
 
-    private void parseTrunk(Block b) {
+    private void parseTrunk(@NotNull Block b) {
         if (logList.size() > 1 && logList.contains(b) || TreeParser.isDistanceBiggerThan(firstBlock.getLocation(), b.getLocation(), getMaxTrunkSize())) {
             return;
         }
@@ -48,20 +52,20 @@ public abstract class TreeParser {
         parseTrunk(b.getRelative(BlockFace.UP));
     }
 
-    private boolean isWood(Block b) {
-        return b.getType().equals(wood);
+    private boolean isWood(@NotNull Block b) {
+        return wood_tag.isTagged(b.getType());
     }
 
-    protected Collection<Vector> getDirsLog() {
+    protected @NotNull Collection<Vector> getDirsLog() {
         return Collections.emptySet();
     }
 
-    protected Collection<Vector> getDirsStem() {
+    protected @NotNull Collection<Vector> getDirsStem() {
         return Arrays.asList(new Vector(0, 0, -1), new Vector(1, 0, 0), new Vector(0, 0, 1), new Vector(-1, 0, 0),
                 new Vector(1, 0, 1), new Vector(-1, 0, 1), new Vector(-1, 0, -1), new Vector(1, 0, -1));
     }
 
-    protected Collection<Vector> getDirsLeaves() {
+    protected @NotNull Collection<Vector> getDirsLeaves() {
         return Arrays.asList(new Vector(0, 1, 0), new Vector(0, 0, -1), new Vector(1, 0, 0), new Vector(0, 0, 1),
                 new Vector(-1, 0, 0));
     }
@@ -72,7 +76,7 @@ public abstract class TreeParser {
 
     protected abstract int getMaxTrunkSize();
 
-    protected static boolean isDistanceBiggerThan(Location l1, Location l2, int distance) {
+    protected static boolean isDistanceBiggerThan(@NotNull Location l1, @NotNull Location l2, int distance) {
         int loc1 = l1.getBlockX();
         int loc2 = l2.getBlockX();
         int loc3 = l1.getBlockZ();
@@ -80,7 +84,7 @@ public abstract class TreeParser {
         return (Math.max(loc1, loc2) - Math.min(loc1, loc2)) > distance || (Math.max(loc3, loc4) - Math.min(loc3, loc4)) > distance;
     }
 
-    public static TreeParser newTreeParser(Block b) {
+    public static @Nullable TreeParser newTreeParser(@NotNull Block b) {
         if (!Timber.isTimberLog(b.getType())) {
             return null;
         }

@@ -2,6 +2,7 @@ package de.mc_anura.realisticminecraft.infobar;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class TemperaturePlayer extends RealisticPlayer {
 
@@ -10,15 +11,11 @@ public class TemperaturePlayer extends RealisticPlayer {
     private static final short MIN_TEMP = 15;
     private static final short MAX_TEMP = 45;
     private static final short DEFAULT_TEMP = 30;
-    
+
     private static final short MIN_TEMP_DRINK = 30;
     private static final short MAX_TEMP_EAT = 35;
 
-    public TemperaturePlayer(Player p) {
-        this(p, -1, BarStatus.STANDARD);
-    }
-
-    public TemperaturePlayer(Player p, float temp, BarStatus status) {
+    public TemperaturePlayer(@NotNull Player p, float temp, @NotNull BarStatus status) {
         super(p, temp, MIN_TEMP, MAX_TEMP, DEFAULT_TEMP);
         bar = new TemperatureBar(this, status);
     }

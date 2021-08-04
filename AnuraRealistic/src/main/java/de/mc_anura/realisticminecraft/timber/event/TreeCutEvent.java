@@ -16,7 +16,7 @@ public class TreeCutEvent extends AnuraPlayerEvent implements Cancellable {
     private short appleDropChance = 110;
     private short leavesDropChance = 45;
 
-    public TreeCutEvent(Player p, Block b) {
+    public TreeCutEvent(@NotNull Player p, @NotNull Block b) {
         super(p, true);
         this.block = b;
     }
@@ -30,7 +30,7 @@ public class TreeCutEvent extends AnuraPlayerEvent implements Cancellable {
         return HANDLERS;
     }
 
-    public Block getBlock() {
+    public @NotNull Block getBlock() {
         return block;
     }
 

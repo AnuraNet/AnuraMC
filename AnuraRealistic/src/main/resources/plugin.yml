@@ -1,14 +1,20 @@
-name: RealisticMinecraft
+name: AnuraRealistic
 version: 0.1
 author: hibo98
 # Custom Properties
 main: de.mc_anura.realisticminecraft.RealisticMinecraft
-depend: [AnuraCore,AnuraFreebuild]
+depend: [ AnuraCore,AnuraFreebuild ]
+softdepend: [ LogBlock ]
 api-version: 1.17
 commands:
   infobar:
     description: Konfigurieret die Infobars
-    usage: §c/infobar <durst|temp(eratur)> <an|standard>
-  infobarset:
-    description: Setzt Werte für die Infobar
-    usage: §c/infobarset <durst|temp(eratur)> <value>
+    usage: §c/infobar <durst|temp> <an|standard>
+  setinfobar:
+    description: Setze Infobar Werte
+    usage: §c/infobar [player] <durst|temp> <value>
+    permission: anura.realistic.setinfobar
+  chair:
+    description: Schalte Chair Feature an/aus
+    usage: §c/chair
+    aliases: [ hocker ]

@@ -1,15 +1,18 @@
 package de.mc_anura.realisticminecraft.infobar;
 
 import de.mc_anura.core.AnuraThread;
-import java.util.Objects;
 import de.mc_anura.realisticminecraft.RealisticMinecraft;
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public abstract class Infobar<T extends RealisticPlayer> {
+public abstract class InfoBar<T extends RealisticPlayer> {
+
+    private static final byte TIMEOUT = 5;
 
     protected final T player;
     protected final BossBar bossbar;
@@ -17,9 +20,7 @@ public abstract class Infobar<T extends RealisticPlayer> {
     private byte display_time = 0;
     private BukkitTask task = null;
 
-    public Infobar(T p, String title, BarColor color, BarStyle style, BarStatus status) {
-        Objects.requireNonNull(p);
-        Objects.requireNonNull(status);
+    public InfoBar(@NotNull T p, @Nullable String title, @NotNull BarColor color, @NotNull BarStyle style, @NotNull BarStatus status) {
         player = p;
         bossbar = Bukkit.createBossBar(title, color, style);
         bossbar.addPlayer(player.getPlayer());
@@ -27,12 +28,11 @@ public abstract class Infobar<T extends RealisticPlayer> {
         update();
     }
 
-    public BarStatus getBarStatus() {
+    public @NotNull BarStatus getBarStatus() {
         return barstatus;
     }
 
-    public void setBarStatus(BarStatus status) {
-        Objects.requireNonNull(status);
+    public void setBarStatus(@NotNull BarStatus status) {
         barstatus = status;
         update();
         player.updateDatabase(true);
@@ -56,15 +56,15 @@ public abstract class Infobar<T extends RealisticPlayer> {
     public void update() {
         bossbar.setProgress((player.getValue() - player.getMIN()) / (player.getMAX() - player.getMIN()));
         setBarVisible(true);
-        startCountdown((byte) 5);
+        startCountdown();
     }
 
     protected boolean stayCondition() {
-        return getBarStatus().equals(BarStatus.AN);
+        return getBarStatus().equals(BarStatus.IMMER);
     }
 
-    protected void startCountdown(byte time) {
-        display_time = time;
+    protected void startCountdown() {
+        display_time = TIMEOUT;
         if (task == null) {
             task = Bukkit.getScheduler().runTaskTimerAsynchronously(RealisticMinecraft.getInstance(), () -> {
                 if (display_time > 0) {

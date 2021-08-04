@@ -1,13 +1,15 @@
 package de.mc_anura.realisticminecraft.timber.parser;
 
 import com.google.common.collect.Sets;
-import java.util.Collection;
 import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
 
 public class BigOakTreeParser extends OakTreeParser {
 
-    protected BigOakTreeParser(Block first) {
+    protected BigOakTreeParser(@NotNull Block first) {
         super(first);
     }
 
@@ -27,7 +29,7 @@ public class BigOakTreeParser extends OakTreeParser {
     }
 
     @Override
-    protected Collection<Vector> getDirsLog() {
+    protected @NotNull Collection<Vector> getDirsLog() {
         return Sets.newHashSet(new Vector(0, 0, -1), new Vector(1, 0, 0), new Vector(0, 0, 1), new Vector(-1, 0, 0));
     }
 }

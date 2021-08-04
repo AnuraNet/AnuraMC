@@ -12,37 +12,19 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.WeakHashMap;
+import java.util.*;
 
 public abstract class ChairManager {
 
+    private static final Set<Player> DISABLED_CHAIR = Collections.newSetFromMap(new WeakHashMap<>());
     private static final Map<Player, ArmorStand> SITTING_PLAYERS = new WeakHashMap<>();
     private static final Map<Player, Block> SITTING_BLOCKS = new WeakHashMap<>();
-//    private static Field f;
-//
-//    static {
-//        try {
-//            f = PlayerConnection.class.getDeclaredField("B");
-//            f.setAccessible(true);
-//        } catch (NoSuchFieldException | SecurityException ex) {
-//            Logger.getLogger(ChairManager.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//    }
+    private static final Map<Player, Location> ENTER_LOC = new WeakHashMap<>();
 
-    public static void playerSitDown(Player p, Stairs s, Block b) {
-        Objects.requireNonNull(p);
-        Objects.requireNonNull(s);
-        Objects.requireNonNull(b);
-        //Anti Fly-Kick
-//        try {
-//            f.set(((CraftPlayer) p).getHandle().playerConnection, false);
-//        } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
-//            Logger.getLogger(ChairManager.class.getName()).log(Level.SEVERE, null, ex);
-//        }
+    public static void playerSitDown(@NotNull Player p, @NotNull Stairs s, @NotNull Block b) {
+        ENTER_LOC.put(p, p.getLocation());
         //ArmorStand creation
         Location loc = b.getLocation().add(0.5, 0.25, 0.5);
         loc.setYaw(Blocks.faceToYaw(s.getFacing()));
@@ -52,54 +34,64 @@ public abstract class ChairManager {
                 ArmorStand a = (ArmorStand) e;
                 a.setMarker(true);
                 a.setInvisible(true);
+                a.setGravity(false);
+                AttributeInstance maxHealth = a.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+                if (maxHealth != null) {
+                    maxHealth.setBaseValue(0);
+                }
             });
-//            CraftWorld cw = (CraftWorld) w;
-//            EntityArmorStand nms_as = new EntityArmorStand(cw.getHandle(), loc.getX(), loc.getY(), loc.getZ());
-//            nms_as.setInvisible(true);
-//            nms_as.setMarker(true);
-//            ArmorStand as = (ArmorStand) cw.addEntity(nms_as, SpawnReason.CUSTOM);
-            as.setGravity(false);
-            AttributeInstance maxHealth = as.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-            if (maxHealth != null) {
-                maxHealth.setBaseValue(0);
-            }
-            //as.teleport(loc);
+            Location pLoc = p.getLocation();
+            pLoc.setYaw(loc.getYaw());
+            p.teleport(pLoc);
             as.addPassenger(p);
             SITTING_PLAYERS.put(p, as);
             SITTING_BLOCKS.put(p, b);
         }
     }
 
-    public static void playerStandUp(Player p) {
-        Objects.requireNonNull(p);
+    public static void playerStandUp(@NotNull Player p) {
         ArmorStand as = SITTING_PLAYERS.remove(p);
         as.removePassenger(p);
         as.remove();
         SITTING_BLOCKS.remove(p);
+        Location loc = ENTER_LOC.remove(p);
+        if (loc != null) {
+            p.teleport(loc);
+        }
     }
 
-    public static void playerStandUp(Block b) {
-        Objects.requireNonNull(b);
-        playerStandUp(Util.getKeyByValue(SITTING_BLOCKS, b));
+    public static void playerStandUp(@NotNull Block b) {
+        Player p = Util.getKeyByValue(SITTING_BLOCKS, b);
+        if (p != null) {
+            playerStandUp(p);
+        }
     }
 
-    public static boolean isSittingAnyone(Block b) {
-        Objects.requireNonNull(b);
+    public static boolean isSittingAnyone(@NotNull Block b) {
         return SITTING_BLOCKS.containsValue(b);
     }
 
-    public static boolean isSittingPlayer(Block b, Player p) {
-        Objects.requireNonNull(p);
-        Objects.requireNonNull(b);
+    public static boolean isSittingPlayer(@NotNull Block b, @NotNull Player p) {
         return SITTING_BLOCKS.containsValue(b) && Objects.equals(Util.getKeyByValue(SITTING_BLOCKS, b), p);
     }
 
-    public static boolean isSitting(Player p) {
-        Objects.requireNonNull(p);
+    public static boolean isSitting(@NotNull Player p) {
         return SITTING_PLAYERS.containsKey(p);
     }
 
     public static void destroyAll() {
         new HashSet<>(SITTING_PLAYERS.keySet()).forEach(ChairManager::playerStandUp);
+    }
+
+    public static boolean isDisabled(@NotNull Player p) {
+        return DISABLED_CHAIR.contains(p);
+    }
+
+    public static void disableChair(@NotNull Player p) {
+        DISABLED_CHAIR.add(p);
+    }
+
+    public static void enableChair(@NotNull Player p) {
+        DISABLED_CHAIR.remove(p);
     }
 }

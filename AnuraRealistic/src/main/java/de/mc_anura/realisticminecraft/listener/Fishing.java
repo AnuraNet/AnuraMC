@@ -9,13 +9,14 @@ import org.bukkit.entity.FishHook;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerFishEvent;
+import org.jetbrains.annotations.NotNull;
 
 public class Fishing implements Listener {
 
     private static final String FAILED_HOOK_NAME = ChatColor.DARK_RED + "✖✖✖";
 
     @EventHandler(ignoreCancelled = true)
-    public void onFish(PlayerFishEvent ev) {
+    public void onFish(@NotNull PlayerFishEvent ev) {
 
         FishHook hook = ev.getHook();
         Chunk chunk = hook.getLocation().getChunk();

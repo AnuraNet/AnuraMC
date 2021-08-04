@@ -1,12 +1,15 @@
 package de.mc_anura.realisticminecraft.timber.parser;
 
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
+import org.jetbrains.annotations.NotNull;
 
 public class SpruceTreeParser extends TreeParser {
 
-    SpruceTreeParser(Block first) {
+    SpruceTreeParser(@NotNull Block first) {
         super(first);
+        wood_tag = Tag.SPRUCE_LOGS;
         wood = Material.SPRUCE_LOG;
         leave = Material.SPRUCE_LEAVES;
     }

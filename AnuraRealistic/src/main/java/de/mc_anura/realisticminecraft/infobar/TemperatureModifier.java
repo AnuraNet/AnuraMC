@@ -11,6 +11,8 @@ import org.bukkit.block.data.type.Furnace;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +28,7 @@ public abstract class TemperatureModifier {
     public static final float DRINK_MOD = -1f;
     public static final float EAT_MOD = 2f;
 
-    public static float getModifier(Player p, Location l, TemperaturePlayer tp) {
+    public static float getModifier(@NotNull Player p, @NotNull Location l, @NotNull TemperaturePlayer tp) {
         float modifier = Biome.getModifier(l.getBlock());
         if (modifier == 0) {
             if (tp.getValue() < tp.getDEFAULT()) {
@@ -46,21 +48,15 @@ public abstract class TemperatureModifier {
         modifier += getLavaModifier(l);
         modifier += getWarmModifier(l);
         modifier += Equipment.getModifier(p.getEquipment(), modifier);
-//        if (TheTownAPI.isInWarriors() && WarriorsProvider.isNomaden(p)) {
-//            if (tp.getValue() > tp.getDEFAULT() && modifier > 0
-//                    || tp.getValue() < tp.getDEFAULT() && modifier < 0) {
-//                modifier *= 0.25f;
-//            }
-//        }
         return modifier;
     }
 
-    private static float getRainModifier(Location l) {
+    private static float getRainModifier(@NotNull Location l) {
         World w = l.getWorld();
         return w != null && w.hasStorm() && l.getBlock().getRelative(BlockFace.UP).getLightFromSky() == 0xF ? RAIN_MOD : 0;
     }
 
-    private static float getWaterModifier(Location l, TemperaturePlayer tp) {
+    private static float getWaterModifier(@NotNull Location l, @NotNull TemperaturePlayer tp) {
         if (l.getWorld() != null) {
             Block b = l.getBlock();
             if (b.getTemperature() >= 0.9f && tp.getValue() < tp.getDEFAULT()) {
@@ -71,15 +67,15 @@ public abstract class TemperatureModifier {
         return 0f;
     }
 
-    private static float getFireModifier(Player p) {
+    private static float getFireModifier(@NotNull Player p) {
         return p.getFireTicks() > 0 ? FIRE_MOD : 0;
     }
 
-    private static float getLavaModifier(Location l) {
+    private static float getLavaModifier(@NotNull Location l) {
         return new CuboidSelection(l.getBlock(), 3).getCount(Material.LAVA) > 0 ? FIRE_MOD : 0;
     }
 
-    private static float getWarmModifier(Location l) {
+    private static float getWarmModifier(@NotNull Location l) {
         CuboidSelection sel = new CuboidSelection(l.getBlock(), 3);
         ArrayList<Block> blocks = sel.getBlocks(Material.FURNACE);
         boolean lit_furnace = false;
@@ -197,7 +193,10 @@ public abstract class TemperatureModifier {
             return 0;
         }
 
-        public static float getModifier(EntityEquipment ee, float tempModifier) {
+        public static float getModifier(@Nullable EntityEquipment ee, float tempModifier) {
+            if (ee == null) {
+                return 0;
+            }
             float modifier = 0;
             ItemStack boots = ee.getBoots();
             if (boots != null) {
