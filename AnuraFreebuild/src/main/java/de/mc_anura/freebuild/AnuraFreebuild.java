@@ -62,6 +62,7 @@ public class AnuraFreebuild extends JavaPlugin {
         pm.registerEvents(new FireSpread(), this);
         pm.registerEvents(new LeavesDecay(), this);
         pm.registerEvents(new BedEvents(), this);
+        pm.registerEvents(new ElytraEvents(), this);
     }
 
     private void setupTasks() {
