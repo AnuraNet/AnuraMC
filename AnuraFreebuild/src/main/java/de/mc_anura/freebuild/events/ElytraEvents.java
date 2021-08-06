@@ -67,6 +67,7 @@ public class ElytraEvents implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onMount(@NotNull EntityMountEvent e) {
         if (e.getEntity() instanceof Player p) {
+            glidingPlayers.remove(p);
             p.setGliding(false);
         }
     }
