@@ -26,6 +26,7 @@ public class ThirstPlayer extends RealisticPlayer {
 
     private static final float BASIC_MOD = -0.015f;
     private static final float DRINK_MOD = 10f;
+    private static final float EAT_SOUP = 5f;
     private static final float RAIN_MOD = 1f;
     private static final float FOOD_LEVEL_MOD = -1f;
 
@@ -79,6 +80,10 @@ public class ThirstPlayer extends RealisticPlayer {
 
     public float drink() {
         return addValue(DRINK_MOD);
+    }
+
+    public float eatSoup() {
+        return addValue(EAT_SOUP);
     }
 
     public float foodLevelChange() {
