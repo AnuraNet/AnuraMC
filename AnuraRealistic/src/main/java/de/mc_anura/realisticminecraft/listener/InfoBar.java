@@ -60,20 +60,22 @@ public class InfoBar implements Listener {
         final TemperaturePlayer tp = vh.getPlayer(TemperaturePlayer.class);
         final ThirstPlayer thp = vh.getPlayer(ThirstPlayer.class);
         switch (e.getItem().getType()) {
-            case MILK_BUCKET:
-            case POTION:
+            case MILK_BUCKET, POTION -> {
                 if (tp != null) {
                     tp.drink();
                 }
                 if (thp != null) {
                     thp.drink();
                 }
-                break;
-            case MUSHROOM_STEW:
+            }
+            case MUSHROOM_STEW -> {
                 if (tp != null) {
                     tp.eatSoup();
                 }
-                break;
+                if (thp != null) {
+                    thp.eatSoup();
+                }
+            }
         }
     }
 
