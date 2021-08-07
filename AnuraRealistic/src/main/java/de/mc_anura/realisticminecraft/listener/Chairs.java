@@ -5,7 +5,6 @@ import de.mc_anura.core.msg.Msg;
 import de.mc_anura.realisticminecraft.RealisticMinecraft;
 import de.mc_anura.realisticminecraft.util.ChairManager;
 import org.bukkit.Material;
-import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Bisected.Half;
 import org.bukkit.block.data.type.Stairs;
@@ -52,15 +51,14 @@ public class Chairs implements Listener {
                 if (s.getHalf().equals(Half.BOTTOM)) {
                     e.setCancelled(true);
                     Material above = b.getLocation().add(0, 1, 0).getBlock().getType();
-                    if (above.isSolid() && !allowedAbove(above)) {
+                    if (above.isSolid() && !ChairManager.allowedAbove(above)) {
                         Msg.send(p, RealisticMinecraft.PLUGIN_DATA, Msg.MsgType.ERROR, "Da ist kein Platz zum Sitzen!");
                     } else if (ChairManager.isSittingAnyone(b)) {
                         if (!ChairManager.isSittingPlayer(b, p)) {
                             Msg.send(p, RealisticMinecraft.PLUGIN_DATA, Msg.MsgType.ERROR, "Hier sitzt bereits jemand!");
                         }
                     } else if (ChairManager.isSitting(p)) {
-                        ChairManager.playerStandUp(p);
-                        ChairManager.playerSitDown(p, s, b);
+                        ChairManager.changeSeat(p, s, b);
                     } else {
                         ChairManager.playerSitDown(p, s, b);
                     }
@@ -74,9 +72,5 @@ public class Chairs implements Listener {
         if (ChairManager.isSitting(e.getPlayer())) {
             ChairManager.playerStandUp(e.getPlayer());
         }
-    }
-
-    private static boolean allowedAbove(@NotNull Material m) {
-        return Tag.BANNERS.isTagged(m) || Tag.WALL_SIGNS.isTagged(m);
     }
 }
