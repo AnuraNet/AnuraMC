@@ -3,10 +3,13 @@ package de.mc_anura.realisticminecraft.util;
 import de.mc_anura.core.util.Blocks;
 import de.mc_anura.core.util.Util;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.Stairs;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
@@ -60,6 +63,22 @@ public abstract class ChairManager {
         }
     }
 
+    public static void changeSeat(@NotNull Player p, @NotNull Stairs s, @NotNull Block b) {
+        Block sb = SITTING_BLOCKS.get(p);
+        Location enterLoc = null;
+        if (sb != null && allowedAbove(sb.getRelative(BlockFace.UP, 2).getType())) {
+            ENTER_LOC.remove(p);
+            enterLoc = sb.getRelative(BlockFace.UP).getLocation();
+            enterLoc.setYaw(p.getLocation().getYaw());
+            enterLoc.setPitch(p.getLocation().getPitch());
+        }
+        playerStandUp(p);
+        if (enterLoc != null) {
+            p.teleport(enterLoc);
+        }
+        playerSitDown(p, s, b);
+    }
+
     public static void playerStandUp(@NotNull Block b) {
         Player p = Util.getKeyByValue(SITTING_BLOCKS, b);
         if (p != null) {
@@ -93,5 +112,9 @@ public abstract class ChairManager {
 
     public static void enableChair(@NotNull Player p) {
         DISABLED_CHAIR.remove(p);
+    }
+
+    public static boolean allowedAbove(@NotNull Material m) {
+        return Tag.BANNERS.isTagged(m) || Tag.WALL_SIGNS.isTagged(m) || Tag.TRAPDOORS.isTagged(m) || m.isEmpty();
     }
 }

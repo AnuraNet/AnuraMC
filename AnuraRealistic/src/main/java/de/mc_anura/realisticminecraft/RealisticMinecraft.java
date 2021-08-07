@@ -55,6 +55,11 @@ public class RealisticMinecraft extends JavaPlugin {
                 + ") ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_german1_ci COMMENT='RealisticMinecraft | LukBukkit'");
         // Chairs
         Bukkit.getPluginManager().registerEvents(new Chairs(), instance);
+        ChairCommand chairCommand = new ChairCommand();
+        PluginCommand chair = instance.getCommand("chair");
+        if (chair != null) {
+            chair.setExecutor(chairCommand);
+        }
         // InfoBar
         AnuraThread.async(() -> Bukkit.getOnlinePlayers().stream().filter((p) -> p.getGameMode().equals(GameMode.SURVIVAL)).forEach(ValueHolder::new));
         InfoBarCommand infoBarCommand = new InfoBarCommand();
@@ -68,11 +73,6 @@ public class RealisticMinecraft extends JavaPlugin {
         if (setInfoBar != null) {
             setInfoBar.setExecutor(setInfoBarCommand);
             setInfoBar.setTabCompleter(setInfoBarCommand);
-        }
-        ChairCommand chairCommand = new ChairCommand();
-        PluginCommand chair = instance.getCommand("chair");
-        if (chair != null) {
-            chair.setExecutor(chairCommand);
         }
         InfoBarUtil.enableInfoBarTasks();
         Bukkit.getPluginManager().registerEvents(new InfoBar(), instance);
