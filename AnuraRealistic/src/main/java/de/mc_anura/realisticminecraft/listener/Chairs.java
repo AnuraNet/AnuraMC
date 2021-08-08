@@ -6,6 +6,7 @@ import de.mc_anura.realisticminecraft.RealisticMinecraft;
 import de.mc_anura.realisticminecraft.util.ChairManager;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Bisected.Half;
 import org.bukkit.block.data.type.Stairs;
 import org.bukkit.entity.ArmorStand;
@@ -50,8 +51,8 @@ public class Chairs implements Listener {
             if (b != null && b.getBlockData() instanceof Stairs s) {
                 if (s.getHalf().equals(Half.BOTTOM)) {
                     e.setCancelled(true);
-                    Material above = b.getLocation().add(0, 1, 0).getBlock().getType();
-                    if (above.isSolid() && !ChairManager.allowedAbove(above)) {
+                    Material above = b.getRelative(BlockFace.UP).getType();
+                    if (!ChairManager.allowedAbove(above)) {
                         Msg.send(p, RealisticMinecraft.PLUGIN_DATA, Msg.MsgType.ERROR, "Da ist kein Platz zum Sitzen!");
                     } else if (ChairManager.isSittingAnyone(b)) {
                         if (!ChairManager.isSittingPlayer(b, p)) {

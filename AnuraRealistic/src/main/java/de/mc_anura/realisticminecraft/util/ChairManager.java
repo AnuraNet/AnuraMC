@@ -115,6 +115,6 @@ public abstract class ChairManager {
     }
 
     public static boolean allowedAbove(@NotNull Material m) {
-        return Tag.BANNERS.isTagged(m) || Tag.WALL_SIGNS.isTagged(m) || Tag.TRAPDOORS.isTagged(m) || m.isEmpty();
+        return !m.isSolid() || Tag.BANNERS.isTagged(m) || Tag.WALL_SIGNS.isTagged(m) || Tag.TRAPDOORS.isTagged(m);
     }
 }
