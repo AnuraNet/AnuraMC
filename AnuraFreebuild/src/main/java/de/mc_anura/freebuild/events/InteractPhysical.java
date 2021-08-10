@@ -16,6 +16,7 @@ public class InteractPhysical implements Listener {
     public void onFarmland(PlayerInteractEvent e) {
         if (e.getAction() != Action.PHYSICAL) return;
         if (e.getClickedBlock() == null) return;
+        System.out.println("PlayerInteractEvent (Physical)" + e.getClickedBlock().getLocation());
         if (e.getClickedBlock().getType().equals(Material.FARMLAND)) {
             Boolean owner = RegionManager.isOwner(e.getPlayer(), e.getClickedBlock().getLocation());
             if (owner != null) {
