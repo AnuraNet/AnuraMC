@@ -11,6 +11,7 @@ public class EnDeathEvent implements Listener {
 
     @EventHandler
     public void onEntityDeath(EntityDeathEvent e) {
+        System.out.println("EntityDeathEvent: " + e.getEntityType());
         UUID owner = RegionManager.getOwner(e.getEntity().getLocation());
         if (owner != null) {
             return;

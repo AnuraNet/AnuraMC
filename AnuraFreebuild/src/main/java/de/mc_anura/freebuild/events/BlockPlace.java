@@ -6,33 +6,61 @@ import org.bukkit.GameMode;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockMultiPlaceEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 
+import static de.mc_anura.freebuild.events.BlockBreak.log;
+
 public class BlockPlace implements Listener {
 
-    private boolean checkAllowed(BlockPlaceEvent event) {
+    private void checkAllowed(BlockPlaceEvent event) {
         Player P = event.getPlayer();
         Boolean owner = RegionManager.isOwner(P, event.getBlock().getLocation());
         if (owner != null) {
             if (!owner) {
                 event.setCancelled(true);
             }
-            return true;
+            return;
         }
-        return !P.getGameMode().equals(GameMode.SURVIVAL);
     }
 
     @EventHandler
+    public void onBlockPlaceProtect(BlockPlaceEvent event) {
+        checkAllowed(event);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
-        if (checkAllowed(event)) return;
+        log(event);
+        if (!RegionManager.isFree(event.getBlock().getLocation())) {
+            return;
+        }
+
+        if (!event.getPlayer().getGameMode().equals(GameMode.SURVIVAL)) {
+            return;
+        }
+
         ResetManager.addBlock(event.getBlockReplacedState());
     }
 
     @EventHandler
+    public void onMultiPlaceProtect(BlockMultiPlaceEvent event) {
+        checkAllowed(event);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onMultiPlace(BlockMultiPlaceEvent event) {
-        if (checkAllowed(event)) return;
+        log(event);
+        if (!RegionManager.isFree(event.getBlock().getLocation())) {
+            return;
+        }
+
+        if (!event.getPlayer().getGameMode().equals(GameMode.SURVIVAL)) {
+            return;
+        }
+
         for (BlockState state : event.getReplacedBlockStates()) {
             if (state.getBlock().equals(event.getBlock())) continue;
             ResetManager.addBlock(state);

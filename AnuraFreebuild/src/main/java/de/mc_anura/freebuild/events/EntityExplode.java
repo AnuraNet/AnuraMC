@@ -17,13 +17,12 @@ public class EntityExplode implements Listener {
 
     @EventHandler
     public void onExplodeEntity(EntityExplodeEvent event) {
+        System.out.println("EntityExplodeEvent: " + event.getEntityType());
         Location center = event.getLocation();
-        UUID owner = RegionManager.getOwner(center);
-        boolean area = owner != null;
         for (Block b : event.blockList()) {
             if (b.getType() == Material.FIRE) continue;
-            if (!area) ResetManager.addBlock(b);
             if (b.getType() == Material.TNT) continue;
+            if (RegionManager.isFree(b.getLocation())) ResetManager.blockDestroyed(b);
             FallingBlock fb = b.getWorld().spawnFallingBlock(b.getLocation(), b.getBlockData());
             Location fl = fb.getLocation();
             Location rel = new Location(fb.getWorld(), fl.getX() - center.getX(), fl.getY() - center.getY(), fl.getZ() - center.getZ());

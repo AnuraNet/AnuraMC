@@ -6,6 +6,7 @@ import de.mc_anura.freebuild.regions.RegionManager;
 import java.util.Arrays;
 
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -13,9 +14,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.*;
 
 public class BlockBreak implements Listener {
+
+    public static void log(BlockEvent ev) {
+        System.out.println(ev.getEventName() + ": " + ev.getBlock().getLocation());
+    }
 
     @EventHandler(ignoreCancelled=true)
     public void onBlockBreak(BlockBreakEvent event) {
@@ -32,11 +37,11 @@ public class BlockBreak implements Listener {
     
     @EventHandler(ignoreCancelled=true, priority=EventPriority.MONITOR)
     public void onBlockBreakMonitor(BlockBreakEvent event) {
+        log(event);
         Player P = event.getPlayer();
         Block b = event.getBlock();
 
-        Boolean owner = RegionManager.isOwner(P, b.getLocation());
-        if (owner != null) {
+        if (!RegionManager.isFree(b.getLocation())) {
             return;
         }
 
@@ -44,26 +49,11 @@ public class BlockBreak implements Listener {
             return;
         }
 
-        ResetManager.addBlock(b);
-        BlockState state = b.getRelative(BlockFace.DOWN).getState();
-        if (BlockTools.isBreakingBottom(state.getBlockData())) {
-            ResetManager.addBlock(state);
-        }
-        // TODO: Chorus plants, better ore respawning (grouping)
-        Block up = b;
-        while (true) {
-            up = up.getRelative(BlockFace.UP);
-            if (BlockTools.isBreakingTop(up.getBlockData())) {
-                ResetManager.addBlock(state);
-            } else {
-                break;
-            }
-        }
-        for (BlockFace face : Arrays.asList(BlockFace.EAST, BlockFace.WEST, BlockFace.SOUTH, BlockFace.NORTH)) {
-            state = b.getRelative(face).getState();
-            if (BlockTools.isBreakingSide(state.getBlockData(), face.getOppositeFace())) {
-                ResetManager.addBlock(state);
-            }
-        }
+        ResetManager.blockDestroyed(b);
+    }
+
+    @EventHandler
+    public void onBlockForm(BlockFormEvent event) {
+        log(event);
     }
 }
