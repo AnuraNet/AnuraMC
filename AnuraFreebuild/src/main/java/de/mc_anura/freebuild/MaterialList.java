@@ -7,6 +7,7 @@ import java.util.List;
 import com.destroystokyo.paper.MaterialTags;
 import org.bukkit.Material;
 import org.bukkit.Tag;
+import org.bukkit.block.data.type.CoralWallFan;
 
 public class MaterialList {
 
@@ -112,5 +113,44 @@ public class MaterialList {
 
         droppingBottom.addAll(Tag.DOORS.getValues());
         droppingBottom.addAll(Tag.TALL_FLOWERS.getValues());
+    }
+
+    public static final List<Material> droppingSideDirectional = new ArrayList<>();
+
+    static {
+        droppingSideDirectional.addAll(Arrays.asList(
+                Material.BLACK_WALL_BANNER,
+                Material.BLUE_WALL_BANNER,
+                Material.BROWN_WALL_BANNER,
+                Material.CYAN_WALL_BANNER,
+                Material.GRAY_WALL_BANNER,
+                Material.GREEN_WALL_BANNER,
+                Material.LIGHT_BLUE_WALL_BANNER,
+                Material.LIGHT_GRAY_WALL_BANNER,
+                Material.LIME_WALL_BANNER,
+                Material.MAGENTA_WALL_BANNER,
+                Material.ORANGE_WALL_BANNER,
+                Material.PINK_WALL_BANNER,
+                Material.PURPLE_WALL_BANNER,
+                Material.RED_WALL_BANNER,
+                Material.WHITE_WALL_BANNER,
+                Material.YELLOW_WALL_BANNER,
+                Material.SMALL_AMETHYST_BUD,
+                Material.MEDIUM_AMETHYST_BUD,
+                Material.LARGE_AMETHYST_BUD,
+                Material.AMETHYST_CLUSTER,
+                Material.TRIPWIRE_HOOK,
+                Material.WALL_TORCH,
+                Material.REDSTONE_WALL_TORCH,
+                Material.SOUL_WALL_TORCH,
+                Material.LADDER,
+                Material.DEAD_BRAIN_CORAL_WALL_FAN,
+                Material.DEAD_BUBBLE_CORAL_WALL_FAN,
+                Material.DEAD_FIRE_CORAL_WALL_FAN,
+                Material.DEAD_HORN_CORAL_WALL_FAN,
+                Material.DEAD_TUBE_CORAL_WALL_FAN
+        ));
+        droppingSideDirectional.addAll(Tag.WALL_SIGNS.getValues());
+        droppingSideDirectional.addAll(Tag.WALL_CORALS.getValues());
     }
 }

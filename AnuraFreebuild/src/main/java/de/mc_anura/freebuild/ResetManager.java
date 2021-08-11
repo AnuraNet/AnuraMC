@@ -44,7 +44,7 @@ public class ResetManager {
     public static void init() {
         AnuraThread.async(() -> {
             try {
-                ResultSet rs = DB.querySelect("SELECT * FROM respawnBlocks");
+                ResultSet rs = DB.querySelect("SELECT * FROM respawnBlocks ORDER BY time ASC");
                 while (rs.next()) {
                     World w = Bukkit.getWorld(rs.getString("world"));
                     if (w == null) continue;
@@ -54,7 +54,7 @@ public class ResetManager {
                     AnuraThread.queueSync(() -> {
                         BlockState s = w.getBlockAt(l).getState();
                         s.setBlockData(Bukkit.createBlockData(blockdata));
-                        blocks.add(new Tuple<>(respawnTime * 1000, s));
+                        blocks.offer(new Tuple<>(respawnTime * 1000, s));
                     });
                 }
             } catch (SQLException ex) {
@@ -64,67 +64,76 @@ public class ResetManager {
         
         AnuraThread.add(Bukkit.getScheduler().runTaskTimer(AnuraFreebuild.getInstance(), () -> {
             int i = 0;
-            Iterator<Tuple<Long, BlockState>> block_it = blocks.iterator();
-            while (block_it.hasNext() && i < 500) {
-                Tuple<Long, BlockState> block = block_it.next();
-                if (block.x <= System.currentTimeMillis()) {
-                    BlockState newState = block.y;
-                    Location l = newState.getLocation();
-
-                    boolean changed = false;
-                    Material base = Material.STONE;
-                    if (MaterialTags.ORES.isTagged(newState)) {
-                        if (newState.getType().toString().contains("DEEPSLATE")) {
-                            base = Material.DEEPSLATE;
-                        } else if (newState.getType().toString().contains("NETHER")) {
-                            base = Material.NETHERRACK;
-                        }
-                        l = BlockTools.getNewOreLocation(newState.getLocation(), base);
-                        changed = true;
-                    }
-                    if (!changed) {
-                        boolean physics = false;
-                        Block b = l.getBlock();
-                        BlockData before = b.getBlockData();
-                        BlockData after = newState.getBlockData();
-                        if ((before.getMaterial() == Material.WATER && after.getMaterial() != Material.WATER) ||
-                            (before.getMaterial() != Material.WATER && after.getMaterial() == Material.WATER) ||
-                            after.getMaterial() == Material.POINTED_DRIPSTONE) {
-                            physics = true;
-                        }
-                        newState.update(true, physics);
-                    } else {
-                        Block b = l.getBlock();
-                        b.setBlockData(newState.getBlockData());
-                        if (l != newState.getLocation()) {
-                            Block old = newState.getLocation().getBlock();
-                            old.setType(base);
-                        }
-                    }
-                    block_it.remove();
+            do {
+                Tuple<Long, BlockState> block = blocks.peek();
+                if (block == null) {
+                    break;
                 }
+                if (block.x > System.currentTimeMillis()) {
+                    break;
+                }
+                blocks.poll();
+
+                BlockState newState = block.y;
+                Location l = newState.getLocation();
+
+                boolean changed = false;
+                Material base = Material.STONE;
+                if (MaterialTags.ORES.isTagged(newState)) {
+                    if (newState.getType().toString().contains("DEEPSLATE")) {
+                        base = Material.DEEPSLATE;
+                    } else if (newState.getType().toString().contains("NETHER")) {
+                        base = Material.NETHERRACK;
+                    }
+                    l = BlockTools.getNewOreLocation(newState.getLocation(), base);
+                    changed = true;
+                }
+                if (!changed) {
+                    boolean physics = false;
+                    Block b = l.getBlock();
+                    BlockData before = b.getBlockData();
+                    BlockData after = newState.getBlockData();
+                    if ((before.getMaterial() == Material.WATER && after.getMaterial() != Material.WATER) ||
+                        (before.getMaterial() != Material.WATER && after.getMaterial() == Material.WATER) ||
+                        after.getMaterial() == Material.POINTED_DRIPSTONE) {
+                        physics = true;
+                    }
+                    newState.update(true, physics);
+                } else {
+                    Block b = l.getBlock();
+                    b.setBlockData(newState.getBlockData());
+                    if (l != newState.getLocation()) {
+                        Block old = newState.getLocation().getBlock();
+                        old.setType(base);
+                    }
+                }
+
                 i++;
-            }
+            } while (i < 500);
         }, 5, 10));
 
         AnuraThread.add(Bukkit.getScheduler().runTaskTimer(AnuraFreebuild.getInstance(), () -> {
             int i = 0;
-            Iterator<Tuple<Long, EntityData>> entities_it = entities.iterator();
-            while (entities_it.hasNext() && i < 50) {
-                Tuple<Long, EntityData> entity = entities_it.next();
-                if (entity.x <= System.currentTimeMillis()) {
-                    EntityData data = entity.y;
-                    Location loc = data.getLoc();
-                    EntityType type = data.getType();
-                    World w = loc.getWorld();
-                    Location l = BlockTools.getPossibleSpawn(loc);
-                    if (w != null)
-                        w.spawnEntity(l, type);
-
-                    entities_it.remove();
+            do {
+                Tuple<Long, EntityData> entity = entities.peek();
+                if (entity == null) {
+                    break;
                 }
+                if (entity.x > System.currentTimeMillis()) {
+                    break;
+                }
+                entities.poll();
+
+                EntityData data = entity.y;
+                Location loc = data.getLoc();
+                EntityType type = data.getType();
+                World w = loc.getWorld();
+                Location l = BlockTools.getPossibleSpawn(loc);
+                if (w != null)
+                    w.spawnEntity(l, type);
+
                 i++;
-            }
+            } while (i < 50);
         }, 7, 20));
     }
 

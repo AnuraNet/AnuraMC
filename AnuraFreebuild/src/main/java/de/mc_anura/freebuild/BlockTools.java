@@ -44,13 +44,7 @@ public class BlockTools {
     public static boolean isBreakingSide(BlockData data, BlockFace broken) {
         Material mat = data.getMaterial();
         boolean directional = false;
-        if (mat.toString().contains("WALL_BANNER") ||
-            mat == Material.SMALL_AMETHYST_BUD || mat == Material.MEDIUM_AMETHYST_BUD ||
-            mat == Material.LARGE_AMETHYST_BUD || mat == Material.AMETHYST_CLUSTER ||
-            Tag.WALL_SIGNS.isTagged(mat) || mat == Material.TRIPWIRE_HOOK ||
-            mat == Material.WALL_TORCH || mat == Material.REDSTONE_WALL_TORCH ||
-            mat == Material.SOUL_WALL_TORCH || data instanceof CoralWallFan ||
-            mat == Material.LADDER) {
+        if (MaterialList.droppingSideDirectional.contains(mat)) {
             directional = true;
         } else if (Tag.BUTTONS.isTagged(mat) || mat == Material.LEVER) {
             directional = ((FaceAttachable) data).getAttachedFace() == FaceAttachable.AttachedFace.WALL;

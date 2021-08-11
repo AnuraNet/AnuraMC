@@ -60,13 +60,14 @@ public class AnuraFreebuild extends JavaPlugin {
         pm.registerEvents(new BlockFromTo(), this);
         pm.registerEvents(new ElytraEvents(), this);
         pm.registerEvents(new BlockSpread(), this);
-        pm.registerEvents(new Leaves(), this);
+        pm.registerEvents(new LeavesDecay(), this);
         pm.registerEvents(new SpongeAbsorb(), this);
         pm.registerEvents(new ShearBlock(), this);
         pm.registerEvents(new BlockFertilize(), this);
         pm.registerEvents(new BlockForm(), this);
         pm.registerEvents(new BlockBurn(), this);
         pm.registerEvents(new BucketEvents(), this);
+        pm.registerEvents(new FallingBlock(), this);
     }
 
     private void setupTasks() {
