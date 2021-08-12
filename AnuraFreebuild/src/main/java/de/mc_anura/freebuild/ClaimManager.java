@@ -3,36 +3,36 @@ package de.mc_anura.freebuild;
 import de.mc_anura.core.AnuraThread;
 import de.mc_anura.core.Money;
 import de.mc_anura.core.msg.Msg;
+import de.mc_anura.core.tools.AnuraInventory;
 import de.mc_anura.core.tools.Potions;
 import de.mc_anura.freebuild.regions.Region;
 import de.mc_anura.freebuild.regions.RegionManager;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Lectern;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ClaimManager {
     
@@ -44,9 +44,14 @@ public class ClaimManager {
         claimScb = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective o = claimScb.registerNewObjective("main", "dummy", Component.text("Legende", NamedTextColor.AQUA));
         o.setDisplaySlot(DisplaySlot.SIDEBAR);
-        o.getScore(ChatColor.GREEN + "Dein Grundstück").setScore(3);
-        o.getScore(ChatColor.RED + "Fremdes Grundstück").setScore(2);
-        o.getScore(ChatColor.GRAY + "Aktuelle Auswahl").setScore(1);
+        o.getScore(ChatColor.GREEN + "Dein Grundstück").setScore(8);
+        o.getScore(ChatColor.RED + "Fremdes Grundstück").setScore(7);
+        o.getScore(ChatColor.YELLOW + "Aktuelle Auswahl").setScore(6);
+        o.getScore("").setScore(5);
+        o.getScore(ChatColor.AQUA + "" + ChatColor.BOLD + "Steuerung:").setScore(4);
+        o.getScore(ChatColor.DARK_AQUA + "  Linksklick" + ChatColor.GRAY + ": " + ChatColor.BLUE + "Punkt 1 setzen").setScore(3);
+        o.getScore(ChatColor.DARK_AQUA + "Rechtsklick" + ChatColor.GRAY + ": " + ChatColor.BLUE + "Punkt 2 setzen").setScore(2);
+        o.getScore(ChatColor.DARK_AQUA + "   Q-Taste" + ChatColor.GRAY + ": " + ChatColor.BLUE + "Menü (kaufen, etc.)").setScore(1);
         
         AnuraThread.add(Bukkit.getScheduler().runTaskTimerAsynchronously(AnuraFreebuild.getInstance(), () -> {
             for (Player P : activeClaims.keySet()) {
@@ -57,28 +62,48 @@ public class ClaimManager {
         AnuraThread.add(Bukkit.getScheduler().runTaskTimerAsynchronously(AnuraFreebuild.getInstance(), () -> {
             for (Claim claim : activeClaims.values()) {
                 Location[] loc = claim.corners;
-                if (loc[0] == null || loc[1] == null) continue;
+                if (loc[0] == null || loc[1] == null) {
+                    claim.player.sendActionBar(Component.text("Wähle die Region mit Links-/Rechtsklick", NamedTextColor.DARK_AQUA));
+                    continue;
+                }
                 Location l1 = loc[0];
                 Location l2 = loc[1];
-                int x1 = l1.getBlockX();
-                int x2 = l2.getBlockX();
-                int z1 = l1.getBlockZ();
-                int z2 = l2.getBlockZ();
-                int cost = (Math.max(x1, x2) - Math.min(x1, x2)) * (Math.max(z1, z2) - Math.min(z1, z2));
-                Money.getMoney(claim.player.getUniqueId(), (money) -> {
-                    Component msg = Component.text("Dein Geld: ", NamedTextColor.GREEN)
-                            .append(Component.text(money, NamedTextColor.DARK_GREEN))
-                            .append(Component.text(" | ", NamedTextColor.GRAY))
-                            .append(Component.text("Kosten: ", NamedTextColor.YELLOW))
-                            .append(Component.text(cost, (money >= cost ? NamedTextColor.GREEN : NamedTextColor.RED)));
-                    claim.player.sendActionBar(msg);
+                int cost = getCost(l1, l2);
+                AnuraThread.queueSync(() -> {
+                    int money = Money.get(claim.player);
+                    claim.player.sendActionBar(getMoneyText(money, cost));
                 });
             }
         }, 20, 20));
     }
+
+    private static int getCost(Location l1, Location l2) {
+        int x1 = l1.getBlockX();
+        int x2 = l2.getBlockX();
+        int z1 = l1.getBlockZ();
+        int z2 = l2.getBlockZ();
+        int cost = (Math.max(x1, x2) - Math.min(x1, x2)) * (Math.max(z1, z2) - Math.min(z1, z2));
+        return cost / 10;
+    }
+
+    private static Component getMoneyText(int money, int cost) {
+        return Component.text("Dein Geld: ", NamedTextColor.GREEN)
+                .append(Component.text(money, NamedTextColor.DARK_GREEN))
+                .append(Component.text(" | ", NamedTextColor.GRAY))
+                .append(Component.text("Kosten: ", NamedTextColor.YELLOW))
+                .append(Component.text(cost, (money >= cost ? NamedTextColor.GREEN : NamedTextColor.RED)));
+    }
     
     public static boolean isClaiming(Player P) {
         return activeClaims.containsKey(P);
+    }
+
+    public static Location getOldLocation(Player P) {
+        if (isClaiming(P)) {
+            return activeClaims.get(P).oldLoc;
+        } else {
+            return null;
+        }
     }
 
     public static void shutdown() {
@@ -88,7 +113,8 @@ public class ClaimManager {
     
     public static void endClaimMode(Player P) {
         if (activeClaims.containsKey(P)) {
-            endClaimMode(activeClaims.remove(P));
+            endClaimMode(activeClaims.get(P));
+            activeClaims.remove(P);
         }
     }
     
@@ -123,33 +149,32 @@ public class ClaimManager {
                 Msg.send(P, AnuraFreebuild.getInstance(), Msg.MsgType.ERROR, "Ein Teil der Region gehört bereits jemandem!");
                 return;
             }
-            int cost = (Math.max(x1, x2) - Math.min(x1, x2)) * (Math.max(z1, z2) - Math.min(z1, z2));
-            Money.getMoney(P.getUniqueId(), (money) -> {
+            int cost = getCost(locs[0], locs[1]);
+            AnuraThread.sync(() -> {
+                int money = Money.get(P);
                 if (money < cost) {
                     Msg.send(P, AnuraFreebuild.getInstance(), Msg.MsgType.ERROR, "Du hast nicht genug Geld! " + ChatColor.GRAY + "("
                                   + ChatColor.YELLOW + "Dein Geld: " + money + ChatColor.GRAY + " | " 
                                   + ChatColor.RED + "Kosten: " + cost + ChatColor.GRAY + ")");
                     return;
                 }
-                Money.payMoney(P.getUniqueId(), -cost);
+                Money.pay(P, -cost);
                 Region r = new Region(P.getUniqueId(), locs[0], locs[1]);
                 r.save();
                 Msg.send(P, AnuraFreebuild.getInstance(), Msg.MsgType.SUCCESS, "Gebiet geclaimt!");
-                AnuraThread.sync(() -> {
-                    World w = locs[0].getWorld();
-                    Location[] l = new Location[4];
-                    l[0] = new Location(w, Math.min(x1, x2), 0, Math.min(z1, z2));
-                    l[1] = new Location(w, Math.min(x1, x2), 0, Math.max(z1, z2));
-                    l[2] = new Location(w, Math.max(x1, x2), 0, Math.min(z1, z2));
-                    l[3] = new Location(w, Math.max(x1, x2), 0, Math.max(z1, z2));
-                    for (Location loc : l) {
-                        loc.setY(w.getHighestBlockYAt(loc));
-                        loc.subtract(0, 1, 0).getBlock().setType(Material.STONE);
-                        loc.add(0, 1, 0).getBlock().setType(Material.TORCH);
-                    }
-                    endClaimMode(P);
-                    P.teleport(l[0]);
-                });
+                World w = locs[0].getWorld();
+                Location[] l = new Location[4];
+                l[0] = new Location(w, Math.min(x1, x2), 0, Math.min(z1, z2));
+                l[1] = new Location(w, Math.min(x1, x2), 0, Math.max(z1, z2));
+                l[2] = new Location(w, Math.max(x1, x2), 0, Math.min(z1, z2));
+                l[3] = new Location(w, Math.max(x1, x2), 0, Math.max(z1, z2));
+                for (Location loc : l) {
+                    loc.setY(w.getHighestBlockYAt(loc));
+                    loc.subtract(0, 1, 0).getBlock().setType(Material.STONE);
+                    loc.add(0, 1, 0).getBlock().setType(Material.TORCH);
+                }
+                endClaimMode(P);
+                P.teleport(l[0]);
             });
         });
     }
@@ -192,7 +217,7 @@ public class ClaimManager {
             locs.add(new Location(loc1.getWorld(), Math.max(x1, x2), 0, z));
         }
         for (Location l : locs) {
-            l.setY(l.getWorld().getHighestBlockYAt(l) - 1);
+            l.setY(l.getWorld().getHighestBlockYAt(l));
             P.sendBlockChange(l, data == null ? l.getBlock().getBlockData() : data);
         }
     }
@@ -233,13 +258,14 @@ public class ClaimManager {
     public static void startClaiming(Player P) {
         Claim claim = new Claim(P);
 
-        Msg.send(P, AnuraFreebuild.getInstance(), Msg.MsgType.INFO, "Wähle nun die zu claimende Region!");
         claim.oldLoc = P.getLocation();
         claim.itemInHand = P.getInventory().getItemInMainHand();
 
-        P.setAllowFlight(true);
-        P.setFlying(true);
         Potions.addNativePotion(P, new PotionEffect(PotionEffectType.LEVITATION, 4, 100));
+        AnuraThread.add(Bukkit.getScheduler().runTaskLater(AnuraFreebuild.getInstance(), () -> {
+            P.setAllowFlight(true);
+            P.setFlying(true);
+        }, 4));
 
         P.setScoreboard(claimScb);
         ItemStack s = new ItemStack(Material.STICK);
@@ -249,6 +275,40 @@ public class ClaimManager {
         P.getInventory().setItemInMainHand(s);
         
         activeClaims.put(P, claim);
+    }
+
+    public static void qButton(Player P) {
+        if (!activeClaims.containsKey(P))
+            return;
+
+        int money = Money.get(P);
+        Component moneyComponent = Component.text("Dein Geld: ", NamedTextColor.GREEN)
+                .append(Component.text(money, NamedTextColor.DARK_GREEN));
+
+        Component cost = Component.text("Kosten", NamedTextColor.YELLOW);
+        Component lore = null;
+        Location[] corners = activeClaims.get(P).corners;
+        boolean buyable = false;
+        if (corners[0] == null || corners[1] == null) {
+            lore = Component.text("Wähle zunächst zwei Ecken mit der linken und rechten Maustaste.");
+        } else {
+            buyable = true;
+            int costNum = getCost(corners[0], corners[1]);
+            cost = cost.append(Component.text(": ", NamedTextColor.GRAY)).append(Component.text(costNum, NamedTextColor.AQUA));
+        }
+
+
+        AnuraInventory inv = new AnuraInventory(Component.text("Claim-Menü", NamedTextColor.DARK_AQUA), true);
+        inv.putItem(0, new AnuraInventory.InvItem(new ItemStack(Material.RED_DYE), Component.text("Abbrechen", NamedTextColor.RED))
+                .addAction(new AnuraInventory.ActionData(AnuraInventory.Action.COMMAND, "claim")));
+        inv.putItem(3, new AnuraInventory.InvItem(new ItemStack(Material.BOOK), cost, lore));
+        inv.putItem(5, new AnuraInventory.InvItem(new ItemStack(Material.COMMAND_BLOCK), moneyComponent));
+        if (buyable) {
+            inv.putItem(8, new AnuraInventory.InvItem(new ItemStack(Material.GREEN_DYE), Component.text("Claim kaufen", NamedTextColor.GREEN))
+                    .addAction(ClaimManager::confirm));
+        }
+
+        inv.open(P);
     }
 
     public static void interact(Player P, Action action) {
@@ -269,7 +329,7 @@ public class ClaimManager {
             if (locs[1] != null) {
                 setCross(P, locs[1], Material.END_STONE.createBlockData());
             }
-        } else {
+        } else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK){
             if (locs[1] != null) {
                 setCross(P, locs[1], null);
                 old2 = locs[1];
@@ -295,16 +355,80 @@ public class ClaimManager {
                 Msg.send(P, AnuraFreebuild.getInstance(), Msg.MsgType.ERROR, "Der gewählte Bereich ist zu klein!");
                 return;
             }
-            Msg.send(P, AnuraFreebuild.getInstance(), Msg.MsgType.SUCCESS, "Schreibe " + ChatColor.YELLOW + "/claim confirm " + ChatColor.GREEN + "um dein Gebiet zu kaufen.");
             drawBoundingBox(P, locs[0], locs[1], Material.YELLOW_WOOL.createBlockData());
-
         }
     }
     
     private static Location getLookingAt(Player P) {
         return P.getTargetBlock(null, 100).getLocation();
     }
-    
+
+    public static @Nullable PersistentDataContainer getPossibleBookData(@NotNull Block block) {
+        if (block.getState() instanceof Lectern lectern) {
+            ItemStack book = lectern.getInventory().getItem(0);
+            if (book != null && book.getItemMeta() instanceof BookMeta bMeta) {
+                PersistentDataContainer data = bMeta.getPersistentDataContainer();
+                Integer claimId = getIntData(data, "claim");
+                if (claimId != null) {
+                    return data;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static void manageClaim(Player P, PersistentDataContainer data) {
+        Integer claim = getIntData(data, "claim");
+        if (claim == null) {
+            return;
+        }
+        if (claim == -1) {
+            String owner = getStrData(data, "owner");
+            if (owner == null) {
+                P.sendActionBar(Component.text("Unbekannter Grenzstein. Bitte gib einem Admin Bescheid!", NamedTextColor.RED));
+                return;
+            }
+            if (!P.getUniqueId().equals(UUID.fromString(owner))) {
+                P.sendActionBar(Component.text("Dieser Grenzstein gehört dir nicht.", NamedTextColor.RED));
+                return;
+            }
+            if (isClaiming(P)) {
+
+            }
+        }
+    }
+
+    private static NamespacedKey getKey(String path) {
+        return Objects.requireNonNull(NamespacedKey.fromString(path, AnuraFreebuild.getInstance()));
+    }
+
+    private static Integer getIntData(PersistentDataContainer data, String path) {
+        return data.get(getKey(path), PersistentDataType.INTEGER);
+    }
+
+    private static String getStrData(PersistentDataContainer data, String path) {
+        return data.get(getKey(path), PersistentDataType.STRING);
+    }
+
+    public static ItemStack getNewClaimBook(Player P) {
+        ItemStack stack = new ItemStack(Material.WRITTEN_BOOK);
+        BookMeta book = (BookMeta) stack.getItemMeta();
+        book.setGeneration(BookMeta.Generation.ORIGINAL);
+        book.author(Component.text("Makler"))
+            .title(P.displayName().append(Component.text("'s Grundbuch")))
+            .addPages(Component.text("Mit diesem Buch kannst du dir ein neues Grundstück claimen.\n", NamedTextColor.BLUE)
+                .append(Component.text("Begib dich in dein gewünschtes Gebiet" +
+                        " und klicke auf den folgenden Link, um in den Claim-Modus zu wechseln: ", NamedTextColor.DARK_GREEN))
+                .append(Component.text("Claim-Modus", NamedTextColor.GOLD).decorate(TextDecoration.UNDERLINED).clickEvent(ClickEvent.runCommand("/claim"))));
+
+        PersistentDataContainer data = book.getPersistentDataContainer();
+        data.set(getKey("claim"), PersistentDataType.INTEGER, -1);
+        data.set(getKey("owner"), PersistentDataType.STRING, P.getUniqueId().toString());
+
+        stack.setItemMeta(book);
+        return stack;
+    }
+
     private static class Claim {
         
         private final Location[] corners;

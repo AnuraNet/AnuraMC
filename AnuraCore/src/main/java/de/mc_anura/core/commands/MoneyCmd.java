@@ -4,7 +4,6 @@ import de.mc_anura.core.AnuraCore;
 import de.mc_anura.core.Money;
 import de.mc_anura.core.msg.Msg;
 import de.mc_anura.core.msg.Msg.MsgType;
-import de.mc_anura.core.util.UUIDManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -15,7 +14,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MoneyCmd implements CommandExecutor, TabExecutor {
@@ -29,12 +27,16 @@ public class MoneyCmd implements CommandExecutor, TabExecutor {
                 Msg.send(sender, AnuraCore.getInstance(), MsgType.ERROR, "Dieser Befehl ist nur für Spieler!");
                 return true;
             }
-            Money.getMoney(P.getUniqueId(), (money) -> {
-                Msg.send(P, AnuraCore.getInstance(), MsgType.SUCCESS, "Du hast %m", money);
-            });
+            int money = Money.get(P);
+            Msg.send(P, AnuraCore.getInstance(), MsgType.SUCCESS, "Du hast %m", money);
             return true;
         } else if (args[0].equalsIgnoreCase("pay") && args.length == 3) {
-            Integer money;
+
+            if (!sender.hasPermission("core.money.endless")) {
+                Msg.noPerms(sender);
+            }
+
+            int money;
             try {
                 money = Integer.parseInt(args[2]);
             } catch (NumberFormatException ex) {
@@ -43,55 +45,18 @@ public class MoneyCmd implements CommandExecutor, TabExecutor {
             }
             
             String name = args[1];
-            
-            Runnable payAction = () -> {
-                UUIDManager.getUUID(name, true, (uuid2) -> {
-                    if (uuid2 == null) {
-                        Msg.send(P, AnuraCore.getInstance(), MsgType.ERROR, "Dieser Spieler ist unbekannt!");
-                        return;
-                    }
-                    Money.getMoney(uuid2, (money2) -> {
-                        if (money2 != -1) {
-                            Money.payMoney(uuid2, money);
-                            if (P != null && !P.hasPermission("core.money.endless")) {
-                                Money.payMoney(P.getUniqueId(), -money);
-                            }
-                            Player targetP = Bukkit.getPlayer(uuid2);
-                            String target = (targetP == null) ? name : targetP.getDisplayName();
-                            Msg.send(P, AnuraCore.getInstance(), MsgType.SUCCESS, "Du hast %s %m überwiesen!", target, money);
-                            Msg.send(uuid2, AnuraCore.getInstance(), MsgType.SUCCESS, "%s hat dir %m überwiesen!", (P != null) ? P.getDisplayName() : sender.getName(), money);
-                        } else {
-                            Msg.send(P, AnuraCore.getInstance(), MsgType.ERROR, "Ein Fehler ist aufgetreten");
-                        }
-                    });
-                });
-            };
-            
-            if (sender.hasPermission("core.money.endless")) {
-                payAction.run();
-            } else {
-                if (P == null) {
-                    Msg.send(sender, AnuraCore.getInstance(), MsgType.ERROR, "Dieser Befehl ist nur für Spieler!");
-                    return true;
-                }
-                if (P.getName().equals(args[1])) {
-                    Msg.send(P, AnuraCore.getInstance(), MsgType.ERROR, "Du kannst dir nicht selbst Geld überweisen!");
-                    return true;
-                }
-                if (money <= 0) {
-                    Msg.send(P, AnuraCore.getInstance(), MsgType.ERROR, "Du musst einen positiven Wert angeben!");
-                    return true;
-                }
-                Money.getMoney(P.getUniqueId(), (currentMoney) -> {
-                    if (currentMoney < money) {
-                        Msg.send(P, AnuraCore.getInstance(), MsgType.ERROR, "Du hast nicht genug Geld!");
-                    } else {
-                        payAction.run();
-                    }
-                });
+
+            Player p = Bukkit.getPlayerExact(name);
+            if (p == null) {
+                Msg.send(P, AnuraCore.getInstance(), MsgType.ERROR, "Dieser Spieler ist nicht online!");
+                return true;
             }
+            Money.pay(p, money);
+            Msg.send(sender, AnuraCore.getInstance(), MsgType.SUCCESS, "Du hast %s %m überwiesen!", p.getDisplayName(), money);
+            Msg.send(p, AnuraCore.getInstance(), MsgType.SUCCESS, "%s hat dir %m überwiesen!", (P != null) ? P.getDisplayName() : sender.getName(), money);
+            return true;
         }
-        return true;
+        return false;
     }
 
     @Override

@@ -53,8 +53,6 @@ public class AnuraCore extends JavaPlugin {
     public void onDisable() {
         Msg.send(this, MsgType.SPECIAL, "Server wird neu geladen!");
         
-        Money.save();
-        
         AnuraThread.shutdown();
         Potions.disable();
         Logger logger = (Logger) LogManager.getRootLogger();

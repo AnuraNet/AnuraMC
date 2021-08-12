@@ -1,95 +1,76 @@
 package de.mc_anura.core;
 
-import de.mc_anura.core.database.DB;
-import de.mc_anura.core.database.MySQL.PreparedUpdate;
-import org.bukkit.Bukkit;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import de.mc_anura.core.tools.ItemSearch;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class Money {
     
-    public static final String CURRENCY = "Hundewelpen";
+    public static final String CURRENCY = "Taler";
     public static final int INITIAL_MONEY = 20;
+    private static final int CUSTOM_MODEL_DATA = 42424242;
+    private static final Material COIN_MATERIAL = Material.COMMAND_BLOCK;
 
-    private static final Map<UUID, Integer> playerMoney = new ConcurrentHashMap<>();
-    
-    private static final Set<UUID> toSave = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    
+    private static final ItemStack coin = new ItemStack(COIN_MATERIAL);
+
     public static void init() {
-        AnuraThread.add(Bukkit.getScheduler().runTaskTimerAsynchronously(AnuraCore.getInstance(), Money::save, 20 * 60, 20 * 60));
+        ItemMeta meta = coin.getItemMeta();
+        meta.setCustomModelData(CUSTOM_MODEL_DATA);
+        meta.displayName(Component.text(CURRENCY, NamedTextColor.GOLD).decoration(TextDecoration.BOLD, true).decoration(TextDecoration.ITALIC, false));
+        coin.setItemMeta(meta);
     }
 
-    public static void payMoney(UUID uuid, int count) {
-        // TODO: Thread safety!
-        Runnable exec = () -> {
-            int money = playerMoney.get(uuid) + count;
-            if (money < 0) money = 0;
-            playerMoney.put(uuid, money);
-            toSave.add(uuid);
-        };
-        
-        if (playerMoney.containsKey(uuid)) {
-            exec.run();
-        } else {
-            AnuraThread.async(() -> {
-                if (loadMoney(uuid)) {
-                    exec.run();
-                }
-            });
-        }
+    private static ItemStack createCoins(int amount) {
+        ItemStack coins = coin.clone();
+        coins.setAmount(amount);
+        return coins;
     }
 
-    public static void save() {
-        if (toSave.isEmpty())
-            return;
-        
-        PreparedUpdate prep = DB.queryPrepUpdate("UPDATE players SET money = ? WHERE uuid = ?");
-
-        if (prep == null) {
-            return;
+    private static boolean isCoin(ItemStack stack) {
+        if (stack == null || stack.getType() != COIN_MATERIAL) {
+            return false;
         }
-        
-        for (UUID uuid : toSave) {
-            if (playerMoney.containsKey(uuid)) {
-                prep.add(playerMoney.remove(uuid), uuid.toString());
+        ItemMeta meta = stack.getItemMeta();
+        return meta.getCustomModelData() == CUSTOM_MODEL_DATA;
+    }
+
+    public static void pay(Player player, int count) {
+        ItemSearch.ItemSearchIterator items = new ItemSearch.ItemSearchIterator(player.getInventory(), count < 0);
+        while (count != 0 && items.hasNext()) {
+            ItemStack stack = items.next();
+            if (!isCoin(stack)) {
+                continue;
             }
-        }
-        prep.done();
-        
-        toSave.clear();
-    }
-
-    public static boolean loadMoney(UUID uuid) {
-        try {
-            ResultSet rs = DB.querySelect("SELECT money FROM players WHERE uuid = ?", uuid.toString());
-            rs.next();
-            playerMoney.put(uuid, rs.getInt("money"));
-            return true;
-        } catch (SQLException ex) {
-            Logger.getLogger(Money.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return false;
-    }
-
-    public static void getMoney(UUID uuid, Consumer<Integer> moneyCB) {
-        if (playerMoney.containsKey(uuid)) {
-            moneyCB.accept(playerMoney.get(uuid));
-        } else {
-            AnuraThread.async(() -> {
-                if (!loadMoney(uuid)) {
-                    moneyCB.accept(-1);
+            int amount = stack.getAmount();
+            int actualAdd;
+            if (amount + count < 0) {
+                items.set(null);
+                actualAdd = -amount;
+            } else if (amount + count >= stack.getMaxStackSize()) {
+                actualAdd = stack.getMaxStackSize() - amount;
+                if (actualAdd != 0) {
+                    stack.setAmount(stack.getMaxStackSize());
+                    items.set(stack);
                 }
-                moneyCB.accept(playerMoney.get(uuid));
-            });
+            } else {
+                stack.setAmount(amount + count);
+                items.set(stack);
+                actualAdd = count;
+            }
+            count -= actualAdd;
         }
+
+        if (count > 0) {
+            player.getInventory().addItem(createCoins(count));
+        }
+    }
+
+    public static int get(Player player) {
+        return ItemSearch.find(player.getInventory(), Money::isCoin).stream().map(ItemStack::getAmount).reduce(0, Integer::sum);
     }
 }

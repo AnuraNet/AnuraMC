@@ -2,10 +2,7 @@ package de.mc_anura.core.tools;
 
 import com.google.common.base.Stopwatch;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryAction;
@@ -21,69 +18,59 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class TownInventory {
+public class AnuraInventory {
 
     private final HashMap<Integer, InvItem> items = new HashMap<>();
     private final HashSet<ClickItemCallback> itemClicks = new HashSet<>();
 
     private Inventory inv;
-    private String title;
-    private TextColor color;
+    private Component title;
     private int size;
     private final boolean destroy;
     private Consumer<Player> closeListener = null;
 
-    public TownInventory(String title, TextColor color, int size, boolean destroyOnEnd) {
+    public AnuraInventory(Component title, int size, boolean destroyOnEnd) {
         assert(size % 9 == 0);
         destroy = destroyOnEnd;
-        settings(title, color, size);
+        settings(title, size);
         invs.add(this);
     }
 
-    public TownInventory(String title, TextColor color, boolean destroyOnEnd) {
-        this(title, color, 9, destroyOnEnd);
+    public AnuraInventory(Component title, boolean destroyOnEnd) {
+        this(title, 9, destroyOnEnd);
     }
 
-    public TownInventory(String title) {
+    public AnuraInventory(Component title) {
         this(title, 9, false);
     }
 
-    public TownInventory(String title, int size) {
+    public AnuraInventory(Component title, int size) {
         this(title, size, false);
     }
 
-    public TownInventory(String title, int size, boolean destroyOnEnd) {
-        this(title, null, size, destroyOnEnd);
+    public Component getName() {
+        return title;
     }
 
-    public String getName() {
-        return color + title;
-    }
-
-    public TownInventory settings(String name, TextColor color, int size) {
+    public AnuraInventory settings(Component name, int size) {
         title = name;
-        this.color = color;
         this.size = size;
         createInventory();
         return this;
     }
 
-    public TownInventory settings(String name, int size) {
-        return settings(name, null, size);
+    public AnuraInventory settings(int size) {
+        return settings(title, size);
     }
 
-    public TownInventory settings(int size) {
-        return settings(title, color, size);
-    }
-
-    public TownInventory putItem(int slot, InvItem item) {
+    public AnuraInventory putItem(int slot, InvItem item) {
         assert(slot < size);
         items.put(slot, item);
         inv.setItem(slot, item.getItem());
         return this;
     }
 
-    public TownInventory open(Player P) {
+    public AnuraInventory open(Player P) {
         P.openInventory(inv);
         openInvs.put(P, this);
         return this;
@@ -101,7 +88,7 @@ public class TownInventory {
     }
 
     private void createInventory() {
-        inv = Bukkit.createInventory(null, size, Component.text(title, color));
+        inv = Bukkit.createInventory(null, size, title);
         items.entrySet().stream().filter((i) -> i.getKey() <= size).forEach((i) -> inv.setItem(i.getKey(), i.getValue().getItem()));
     }
 
@@ -118,9 +105,9 @@ public class TownInventory {
     }
 
     public void delete() {
-        Iterator<Entry<Player, TownInventory>> invsIt = openInvs.entrySet().iterator();
+        Iterator<Entry<Player, AnuraInventory>> invsIt = openInvs.entrySet().iterator();
         while (invsIt.hasNext()) {
-            Entry<Player, TownInventory> pInv = invsIt.next();
+            Entry<Player, AnuraInventory> pInv = invsIt.next();
             if (pInv.getValue().equals(this)) {
                 invsIt.remove();
                 pInv.getKey().closeInventory();
@@ -152,11 +139,7 @@ public class TownInventory {
         private final HashSet<ActionData> actions = new HashSet<>();
 
         public InvItem(ItemStack stack) {
-            this(stack, (Component[]) null);
-        }
-
-        public InvItem(ItemStack stack, Component... lores) {
-            this(stack, null, lores);
+            this(stack, null);
         }
 
         public InvItem(ItemStack stack, Component name, Component... lores) {
@@ -191,7 +174,7 @@ public class TownInventory {
             return item;
         }
 
-        @SuppressWarnings("unchecked")
+        //@SuppressWarnings("unchecked")
         public void click(Player P, boolean isShift) {
             for (ActionData action : actions) {
                 if (action.isShift() != isShift) continue;
@@ -202,27 +185,28 @@ public class TownInventory {
                 }
                 switch (action.getAction()) {
                     case OPEN_INV:
-                        if (data instanceof TownInventory) {
-                            ((TownInventory)data).open(P);
+                        if (data instanceof AnuraInventory inv) {
+                            inv.open(P);
                         }
                         break;
                     case TELEPORT:
-                        if (data instanceof Location) {
-                            P.teleport((Location) data);
+                        if (data instanceof Location loc) {
+                            P.teleport(loc);
                         }
                         break;
                     case MESSAGE:
-                        if (data instanceof String) {
-                            P.sendMessage((String) data);
+                        if (data instanceof String msg) {
+                            P.sendMessage(msg);
                         }
                         break;
                     case COMMAND:
-                        if (data instanceof String) {
-                            Bukkit.getServer().dispatchCommand(P, (String) data);
+                        if (data instanceof String cmd) {
+                            Bukkit.getServer().dispatchCommand(P, cmd);
                         }
                         break;
                     case EXEC:
                         if (data instanceof Consumer) {
+                            //noinspection unchecked
                             ((Consumer<Player>) data).accept(P);
                         }
                         break;
@@ -275,7 +259,7 @@ public class TownInventory {
         }
     }
 
-    public static enum Action {
+    public enum Action {
         OPEN_INV,
         TELEPORT,
         MESSAGE,
@@ -287,14 +271,14 @@ public class TownInventory {
         void onClick(Player P, int slot, InventoryAction action, InventoryClickEvent event);
     }
 
-    static final HashSet<TownInventory> invs = new HashSet<>();
-    private static final HashMap<Player, TownInventory> openInvs = new HashMap<>();
+    static final HashSet<AnuraInventory> invs = new HashSet<>();
+    private static final HashMap<Player, AnuraInventory> openInvs = new HashMap<>();
 
-    public static HashSet<TownInventory> getInvs() {
+    public static HashSet<AnuraInventory> getInvs() {
         return invs;
     }
 
-    public static TownInventory getOpenInv(Player P) {
+    public static AnuraInventory getOpenInv(Player P) {
         return openInvs.get(P);
     }
 }
