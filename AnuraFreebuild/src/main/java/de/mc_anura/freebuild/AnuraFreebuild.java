@@ -47,7 +47,6 @@ public class AnuraFreebuild extends JavaPlugin {
         PluginManager pm = this.getServer().getPluginManager();
         pm.registerEvents(new BlockBreak(), this);
         pm.registerEvents(new BlockPlace(), this);
-        //pm.registerEvents(new RegionListener(), this);
         pm.registerEvents(new StructureGrow(), this);
         pm.registerEvents(new EnDeathEvent(), this);
         pm.registerEvents(new InteractPhysical(), this);

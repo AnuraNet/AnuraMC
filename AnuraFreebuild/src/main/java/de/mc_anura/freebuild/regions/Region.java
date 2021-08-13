@@ -88,6 +88,10 @@ public class Region {
     public Location getMax() {
         return sel.getMaxCorner();
     }
+
+    public int getId() {
+        return id;
+    }
     
     public static void loadRegions() {
         try {

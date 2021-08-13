@@ -1,6 +1,6 @@
 package de.mc_anura.core.listeners;
 
-import de.mc_anura.core.tools.TownInventory;
+import de.mc_anura.core.tools.AnuraInventory;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,7 +16,7 @@ public class InventoryEvent implements Listener {
     public void onInvClick(InventoryClickEvent event) {
         Inventory i = event.getView().getTopInventory();
         Player P = (Player) event.getWhoClicked();
-        TownInventory inv = TownInventory.getOpenInv(P);
+        AnuraInventory inv = AnuraInventory.getOpenInv(P);
         if (inv == null) return;
         event.setCancelled(true);
         if (i == event.getClickedInventory()) {
@@ -29,7 +29,7 @@ public class InventoryEvent implements Listener {
     @EventHandler
     public void onInvDrag(InventoryDragEvent event) {
         Player P = (Player) event.getWhoClicked();
-        TownInventory inv = TownInventory.getOpenInv(P);
+        AnuraInventory inv = AnuraInventory.getOpenInv(P);
         if (inv == null) return;
         event.setCancelled(true);
         inv.checkInvClick(event.getInventorySlots().iterator().next(), P, false);
@@ -39,7 +39,7 @@ public class InventoryEvent implements Listener {
     public void onInvClose(InventoryCloseEvent event) {
         Inventory i = event.getInventory();
         Player P = (Player) event.getPlayer();
-        TownInventory inv = TownInventory.getOpenInv(P);
+        AnuraInventory inv = AnuraInventory.getOpenInv(P);
         if (inv == null) return;
         inv.close(P);
     }

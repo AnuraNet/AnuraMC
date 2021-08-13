@@ -35,6 +35,8 @@ public class Claim implements CommandExecutor {
             
             ClaimManager.confirm(P);
             return true;
+        } else if (args[0].equalsIgnoreCase("new")) {
+            P.getInventory().addItem(ClaimManager.getNewClaimBook(P));
         }
         return false;
     }

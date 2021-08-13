@@ -5,12 +5,6 @@ import de.mc_anura.core.AnuraThread;
 import de.mc_anura.core.database.DB;
 import de.mc_anura.core.database.MySQL.PreparedUpdate;
 import de.mc_anura.core.util.Tuple;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -19,9 +13,19 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.Waterlogged;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+// TODO: Piston events, Water forming sources, natural falling blocks (revert or nah?), explosion debris flying into protected zones
 
 public class ResetManager {
     

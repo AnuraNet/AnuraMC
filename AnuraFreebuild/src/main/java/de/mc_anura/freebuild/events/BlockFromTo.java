@@ -43,6 +43,9 @@ public class BlockFromTo implements Listener {
         log(event);
         Block from = event.getBlock();
         Block to = event.getToBlock();
+        if (RegionManager.isFree(to.getLocation()) && from.isLiquid()) {
+            return;
+        }
         if (RegionManager.isFree(from.getLocation()) && RegionManager.isFree(to.getLocation())) {
             ResetManager.addBlock(from);
             ResetManager.addBlock(to);

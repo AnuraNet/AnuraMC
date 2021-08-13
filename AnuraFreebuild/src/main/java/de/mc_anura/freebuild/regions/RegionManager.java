@@ -1,15 +1,16 @@
 package de.mc_anura.freebuild.regions;
 
 import de.mc_anura.core.AnuraThread;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class RegionManager {
 
-    private static final List<Region> regions = new ArrayList<>();
+    private static final Map<Integer, Region> regions = new ConcurrentHashMap<>();
     
     public static void init() {
         AnuraThread.async(Region::loadRegions);
@@ -35,11 +36,11 @@ public class RegionManager {
         else return own.equals(P.getUniqueId());
     }
 
-    public static List<Region> getRegions() {
-        return regions;
+    public static Collection<Region> getRegions() {
+        return regions.values();
     }
 
     public static void addRegion(Region r) {
-        regions.add(r);
+        regions.put(r.getId(), r);
     }
 }
